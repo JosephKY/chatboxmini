@@ -3,6 +3,12 @@ const express = require("express")
 const cookies = require("cookie-parser")
 const nodemailer = require("nodemailer")
 
+// Services
+const userService = require("./src/services/user.service")
+
+// Routes
+const userRoute = require("./src/routes/user.route")
+
 // Work
 const app = express()
 const port = 3000
@@ -15,7 +21,9 @@ app.use(express.static('public', {
     extensions: ['html', 'htm'],
 }));
 
-app.use("/", (req, res)=>{
+app.use("/users", userRoute)
+
+app.use("/", async (req, res)=>{
     let locale = defaultLocale
     if(!req.cookies || !req.cookies.locale){
         locale = defaultLocale
@@ -30,6 +38,7 @@ app.use("/", (req, res)=>{
         localeData = require(`./src/locale/${defaultLocale}.locale.js`);
     }
 
+    /*
     let trans = nodemailer.createTransport("smtp://no-reply@youcc.xyz:ZDax0^IpOO$6!JJYug@youcc.xyz/?pool=true")
 
     let transport = nodemailer.createTransport({
@@ -56,9 +65,12 @@ app.use("/", (req, res)=>{
         }
     }
     )
+    */
 
     res.render("index", localeData)
 })
+
+
 
 app.listen(port, () => {
     console.log(`Chatbox Mini listening on port ${port}`)

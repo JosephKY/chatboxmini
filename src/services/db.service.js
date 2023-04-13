@@ -1,19 +1,26 @@
-const dbModel = require("../models/db.model")
+// Models
+const dbModel = require("../models/db.model");
+const ReturnMessage = require("../models/returnMessage.model");
 
-async function newdb(){
-    let db = new dbModel.Database();
-    let errO = false;
-    await db.conn;
-    (await db.conn).connect((err)=>{
-        if(err){
-            errO = true
+async function newdb() {
+    try {
+        let db = new dbModel.Database();
+        let errO = false;
+        await db.conn;
+        (await db.conn).connect((err) => {
+            if (err) {
+                errO = true
+            }
+        })
+
+        if (errO) {
+            return false;
         }
-    })
-
-    if(errO){
+        return db.conn;
+    } catch (err) {
+        console.log(err);
         return false;
     }
-    return db.conn;
 }
 
 module.exports = {
