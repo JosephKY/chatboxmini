@@ -32,4 +32,13 @@ router.get("/login", async (req, res)=>{
     return;
 })
 
+router.get("/verify", async (req, res)=>{
+    let token = req.query.token;
+    if(!token){
+        returnMessageService((await userController.sendVerificationEmail(req)), res);
+        return;
+    }
+    returnMessageService((await userController.verifyEmail(token, req)), res);
+})
+
 module.exports = router

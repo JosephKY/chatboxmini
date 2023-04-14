@@ -40,7 +40,7 @@ app.use("/", async (req, res)=>{
     }
 
     
-    /*
+    
     let trans = nodemailer.createTransport("smtp://no-reply@youcc.xyz:ZDax0^IpOO$6!JJYug@youcc.xyz/?pool=true")
 
     let transport = nodemailer.createTransport({
@@ -48,12 +48,15 @@ app.use("/", async (req, res)=>{
             "user":"no-reply@youcc.xyz",
             "pass":"ZDax0^IpOO$6!JJYug"
         },
-        "host":"youcc.xyz",
+        "host":"82.163.176.90",
         "tls":{
             "rejectUnauthorized":false
         },
         "secure":true,
+        connectionTimeout:5000
     });
+
+    let errcount = 0
 
     transport.sendMail({
         "from":"no-reply@youcc.xyz",
@@ -65,20 +68,21 @@ app.use("/", async (req, res)=>{
     (err, info)=>{
         if(err){
             console.log(err)
+            console.log(`YOU F'D UP ${errcount}`)
+            errcount = errcount + 1
         } else {
             console.log(info)
+            console.log("SUCCESS!")
         }
     }
     )
-    */
+    
 
+    /*
     let conn = new SMTPConnection({
-        port:"587",
-        host:"104.21.57.22",
-        secure:false,
-        tls:{
-            rejectUnauthorized:false
-        },
+        port:"465",
+        host:"youcc.xyz", 
+        secure:true,
         connectionTimeout:5000,
         debug:true
     }).connect((err)=>{
@@ -86,12 +90,14 @@ app.use("/", async (req, res)=>{
             console.log("error:")
             console.log(err)
         }
-        conn.login({
-            user:"no-reply@youcc.xyz",
-            pass:"ZDax0^IpOO$6!JJYug",
-        })
+        
     })
     
+    conn.login({
+        user:"no-reply@youcc.xyz",
+        pass:"ZDax0^IpOO$6!JJYug",
+    })
+    */
 
     /*
     const { SMTPClient } = require("smtp-client")

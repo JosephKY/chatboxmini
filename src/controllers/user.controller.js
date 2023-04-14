@@ -71,4 +71,22 @@ async function login(usernameOrEmail, password, req, response){
     return userService.login(usernameOrEmail, password, response)
 }
 
-module.exports = { create, login }
+async function sendVerificationEmail(req){
+    let login = jwtService.isLoggedIn(req)
+    if(!login) {
+        return new ReturnMessage("803", "Must be logged in to send a verification email", 400, "error");
+    }
+
+    return userService.sendVerificationEmail(login.sub)
+}
+
+async function verifyEmail(token, req){
+    let login = jwtService.isLoggedIn(req)
+    if(!login) {
+        return new ReturnMessage("907", "Must be logged in to verify an email", 400, "error");
+    }
+
+    return userService.verifyEmail(token, login.sub)
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail }
