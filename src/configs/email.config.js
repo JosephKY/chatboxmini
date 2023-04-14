@@ -1,6 +1,7 @@
 let email = {
     "connectionTimeout":5000,
     "secure":true,
+    "verificationUrl":"http://localhost:3000/users/verify?token=",
     "accounts": {
         "no-reply@youcc.xyz": {
             "host": "82.163.176.90",
