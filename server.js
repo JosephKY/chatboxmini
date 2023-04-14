@@ -2,6 +2,7 @@
 const express = require("express")
 const cookies = require("cookie-parser")
 const nodemailer = require("nodemailer")
+const SMTPConnection = require("nodemailer/lib/smtp-connection");
 
 // Services
 const userService = require("./src/services/user.service")
@@ -38,6 +39,7 @@ app.use("/", async (req, res)=>{
         localeData = require(`./src/locale/${defaultLocale}.locale.js`);
     }
 
+    
     /*
     let trans = nodemailer.createTransport("smtp://no-reply@youcc.xyz:ZDax0^IpOO$6!JJYug@youcc.xyz/?pool=true")
 
@@ -46,17 +48,20 @@ app.use("/", async (req, res)=>{
             "user":"no-reply@youcc.xyz",
             "pass":"ZDax0^IpOO$6!JJYug"
         },
-        "host":"172.67.140.157",
-        "port":"587",
-        "secure":false,
+        "host":"youcc.xyz",
+        "tls":{
+            "rejectUnauthorized":false
+        },
+        "secure":true,
     });
 
-    trans.sendMail({
+    transport.sendMail({
         "from":"no-reply@youcc.xyz",
         "to":"josephshackleford04@gmail.com",
         "subject":"test",
         "text":"Hello World!"
     },
+
     (err, info)=>{
         if(err){
             console.log(err)
@@ -67,6 +72,45 @@ app.use("/", async (req, res)=>{
     )
     */
 
+    let conn = new SMTPConnection({
+        port:"587",
+        host:"104.21.57.22",
+        secure:false,
+        tls:{
+            rejectUnauthorized:false
+        },
+        connectionTimeout:5000,
+        debug:true
+    }).connect((err)=>{
+        if(err){
+            console.log("error:")
+            console.log(err)
+        }
+        conn.login({
+            user:"no-reply@youcc.xyz",
+            pass:"ZDax0^IpOO$6!JJYug",
+        })
+    })
+    
+
+    /*
+    const { SMTPClient } = require("smtp-client")
+
+    let s = new SMTPClient({
+        host: 'youcc.xyz',
+        port: 465
+    });
+
+    (async function() {
+        await s.connect();
+        await s.greet({hostname: 'youcc.xyz'}); // runs EHLO command or HELO as a fallback
+        await s.authPlain({username: 'no-reply@youcc.xyz', password: 'ZDax0^IpOO$6!JJYug'}); // authenticates a user
+        await s.mail({from: 'no-reply@youcc.xyz'}); // runs MAIL FROM command
+        await s.rcpt({to: 'josephshackleford04@gmail.com'}); // runs RCPT TO command (run this   multiple times to add more recii)
+        await s.data('hello world'); // runs DATA command and streams email source
+        await s.quit(); // runs QUIT command
+    })().catch(console.log("error"));
+    */
     res.render("index", localeData)
 })
 

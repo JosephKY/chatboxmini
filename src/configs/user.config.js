@@ -3,6 +3,6 @@ let newUserConfig = {
     maxUsernameLength: 32,
     minPasswordLength: 8,
     maxPasswordLength: 128
-}
+};
 
-module.exports = newUserConfig
+module.exports = newUserConfig;
