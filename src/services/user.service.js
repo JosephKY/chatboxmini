@@ -1,5 +1,6 @@
 // Configs
 const jwtConfig = require("../configs/jwt.config")
+const fs = require("fs")
 const emailConfig = require("../configs/email.config")
 
 // Modules
@@ -11,6 +12,11 @@ const nodemailer = require("nodemailer")
 // Services
 const dbService = require("./db.service")
 const jwtService = require("./jwt.service")
+const cacheService = require("./cache.service")
+
+// Work
+let emailVerificationHtml = fs.readFileSync("views/emailVerification.ejs").toString('utf-8');
+emailVerificationHtml = emailVerificationHtml.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
 
 async function usernameValidate(username){
     var regex = /^[a-zA-Z0-9]+$/;
@@ -18,6 +24,11 @@ async function usernameValidate(username){
 }
 
 async function get(userid){
+    let cache = cacheService.getCache("user", userid)
+    if(cache != false){
+        return cache;
+    }
+
     let db = await dbService.newdb()
     if (!db) {
         return new ReturnMessage("600", "General Failure", 500, "error")
@@ -33,7 +44,9 @@ async function get(userid){
         }
 
         db.end()
-        return res[0];
+        let ret = res[0];
+        cacheService.setCache("user", userid, ret)
+        return ret;
     } catch (err) {
         console.log(err);
         return new ReturnMessage("601", "General Failure", 500, "error")
@@ -246,11 +259,14 @@ async function sendVerificationEmail(userid){
     let created = Math.floor(Date.now() / 1000)
     let expires = created + 1800; // 30 Minutes
 
+    let emailVerHtml = emailVerificationHtml
+    emailVerHtml = emailVerHtml.replaceAll("%%REPLACEME%%", `${emailConfig.verificationUrl}${token}`)
+
     transport.sendMail({
         "from":"no-reply@youcc.xyz",
         "to":"josephshackleford04@gmail.com",
         "subject":"Verify your email",
-        "text":`Verify your Chatbox Mini account's email here: http://localhost:3000/users/verify?token=${token}`
+        "html":emailVerHtml
     }, (err)=>{
         if(err){
             console.log("EMAIL ERROR:")

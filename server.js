@@ -39,7 +39,7 @@ app.use("/", async (req, res)=>{
         localeData = require(`./src/locale/${defaultLocale}.locale.js`);
     }
 
-    
+    /*
     
     let trans = nodemailer.createTransport("smtp://no-reply@youcc.xyz:ZDax0^IpOO$6!JJYug@youcc.xyz/?pool=true")
 
@@ -76,7 +76,7 @@ app.use("/", async (req, res)=>{
         }
     }
     )
-    
+    */
 
     /*
     let conn = new SMTPConnection({
