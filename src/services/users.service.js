@@ -8,6 +8,7 @@ const ReturnMessage = require("../models/returnMessage.model")
 const argon = require("argon2")
 const crypto = require("crypto")
 const nodemailer = require("nodemailer")
+const userModel = require("../models/user.model")
 
 // Services
 const dbService = require("./db.service")
@@ -45,8 +46,10 @@ async function get(userid){
 
         db.end()
         let ret = res[0];
-        cacheService.setCache("user", userid, ret)
-        return ret;
+        let user = new userModel(ret.id, ret.created, ret.username, ret.password, ret.email, ret.emailverified, ret.suspended, ret.verified, ret.dob)
+        
+        cacheService.setCache("user", userid, user)
+        return user;
     } catch (err) {
         console.log(err);
         return new ReturnMessage("601", "General Failure", 500, "error")
