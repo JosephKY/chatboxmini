@@ -3,7 +3,7 @@ const userConfig = require("../configs/user.config");
 
 // Services
 const jwtService = require("../services/jwt.service");
-const userService = require("../services/user.service");
+const userService = require("../services/users.service");
 
 // Modules
 const htmlED = require("html-encoder-decoder")
@@ -89,4 +89,31 @@ async function verifyEmail(token, req){
     return userService.verifyEmail(token, login.sub)
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail }
+async function get(userid, req){
+    let isSelf = false;
+    let login = jwtService.isLoggedIn(req)
+    if(login != false && login.sub == userid) {
+        isSelf = true;
+    }
+
+    let userData = (await userService.get(userid))
+    if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
+        return userData;
+    }
+
+    let ret = {}
+
+    ret.id = userData.id
+    ret.created = userData.created
+    ret.username = userData.username
+    ret.suspended = userData.suspended
+    ret.verified = userData.verified
+    if(isSelf){
+        ret.email = userData.email
+        ret.emailverified = userData.emailverified
+    }
+
+    return new ReturnMessage("1000", ret, 200, "userGet")
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get }
