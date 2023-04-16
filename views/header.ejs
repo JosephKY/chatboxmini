@@ -1,0 +1,15 @@
+<div id="header">
+    <a href="/home" id="logoContainer">
+        <img src="/assets/logo.png" id="logo"/>
+    </a>
+    <div id="profile">
+        <div id="signin">
+            <button onclick="window.location.href = '/login'" class="button"><%=locale.signIn%></button>
+        </div>
+        <div id="profileDetails" class="hidden">
+            <p id="welcomeMsg">Logged in as %username%</p>
+            <a href="" class="hidden">My Profile</a></br>
+            <a href="/signout">Sign Out</a>
+        </div>
+    </div>
+</div>

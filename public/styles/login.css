@@ -1,0 +1,45 @@
+h5 {
+    margin-bottom: 0;
+}
+
+#loginSubmit, #signupSubmit {
+    margin-top: 10px;
+}
+
+input {
+    padding: .25em;
+    outline: none !important;
+    background: #f9f9f9;
+    border: 1px solid #AAA;
+    border-radius: 3px;
+}
+
+input:hover {
+    cursor: pointer;
+    background: #FFF;
+}
+
+input:focus {
+    background: #FFF;
+}
+
+#signupAgreement {
+    margin-top: 1em;
+}
+
+h1, h3, h5 {
+    user-select: none;
+    color: #1e1e1e;
+}
+
+h1 {
+    color: #EEE;
+    background: linear-gradient(#5686E1, #164b9d);
+    padding: 5px 15px;
+    border-radius: 10px;
+    font-size: 1.25em;
+}
+
+h1:nth-of-type(2){
+    margin-top: 3em;
+}

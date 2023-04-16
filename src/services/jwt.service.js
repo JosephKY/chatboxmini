@@ -3,7 +3,6 @@ const jwtconfig = require("../configs/jwt.config")
 
 function genJWT(payload={}){
     let token = jsonwebtoken.sign(payload, jwtconfig.key, { 'algorithm':jwtconfig.algorithm, "issuer":jwtconfig.issuer, "expiresIn": jwtconfig.expiresin});
-    console.log(token)
     return token;
 }
 

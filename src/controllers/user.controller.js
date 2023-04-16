@@ -11,10 +11,19 @@ const htmlED = require("html-encoder-decoder")
 // Models
 const ReturnMessage = require("../models/returnMessage.model");
 
-async function create(username, password, email, req, response){
+async function create(username, password, email, dob, req, response){
     username = String(username);
     password = String(password);
     email = String(email);
+    
+    let verAge = userService.minAge(dob)
+    if(verAge == -1){
+        return new ReturnMessage("120", "Age could not be verified", 400, "error");
+    }
+
+    if(verAge == false){
+        return new ReturnMessage("121", "Must be 13 or older to create an account", 400, "error");
+    }
 
     username = htmlED.encode(username)
 
@@ -60,7 +69,7 @@ async function create(username, password, email, req, response){
         return new ReturnMessage("108", "Email already taken", 400, "error");
     }
 
-    return userService.create(username, password, email, response)
+    return userService.create(username, password, email, verAge, response)
 }
 
 async function login(usernameOrEmail, password, req, response){
@@ -116,4 +125,18 @@ async function get(userid, req){
     return new ReturnMessage("1000", ret, 200, "userGet")
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get }
+async function me(req){
+    let login = jwtService.isLoggedIn(req)
+    if(!login){
+        return new ReturnMessage(
+            "1500",
+            null,
+            200,
+            'me'
+        )
+    }
+
+    return get(login.sub, req);
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me }

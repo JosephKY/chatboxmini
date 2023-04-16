@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html>
+    <script src="/scripts/jquery.js"></script>
     <head>
         <title>Chatbox Mini</title>
+        <link rel="stylesheet" href="/styles/main.css"/>
     </head>
+    <body>
+        <p id="notification">Hello World!</p>
+        <div id="app">
+            <%-include ('header.ejs')%>
+            <%-include (`${page}.ejs`)%> 
+        </div>
+    </body>   
+    <script src="/scripts/main.js"></script>
 </html>

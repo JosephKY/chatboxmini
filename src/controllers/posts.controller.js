@@ -41,13 +41,12 @@ async function create(content, req){
             return new ReturnMessage("1304", "Content includes blacklisted domain", 400, 'error')
         }
     }
-    
+
     let creation = (await postsService.create(login.sub, content))
     return new ReturnMessage("1305", { id: creation }, 200, 'postCreate')
 }
 
 async function feed(type, req, params={}){
-    let remoteAddress = req.socket.remoteAddress
     let reqParams = feedParamsConfig[type]
     if(!reqParams){
         return new ReturnMessage("1200", "Invalid feed type", 400, "error");

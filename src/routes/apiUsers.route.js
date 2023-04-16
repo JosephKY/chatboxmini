@@ -14,13 +14,13 @@ const userController = require("../controllers/user.controller")
 // Work
 const router = express.Router()
 
-router.get("/create", async (req, res)=>{
-    let paramsReq = arrReq.req(req.query, ["username","password","email"]);
+router.post("/create", async (req, res)=>{
+    let paramsReq = arrReq.req(req.query, ["username","password","email","dob"]);
     if(paramsReq != true){
         returnMessageService(new ReturnMessage("107", `Missing parameter: ${paramsReq}`, 400, "error"), res);
         return;
     }
-    returnMessageService((await userController.create(req.query.username, req.query.password, req.query.email, req, res)), res);
+    returnMessageService((await userController.create(req.query.username, req.query.password, req.query.email, req.query.dob, req, res)), res);
     return;
 })
 
@@ -37,20 +37,23 @@ router.get("/login", async (req, res)=>{
 router.get("/verify", async (req, res)=>{
     let token = req.query.token;
     if(!token){
+        if(restrictionsService.isCapacity("sendVerificationEmail", req.socket.remoteAddress, res))return
         returnMessageService((await userController.sendVerificationEmail(req)), res);
+        restrictionsService.addInstance("sendVerificationEmail", req.socket.remoteAddress)
         return;
     }
     returnMessageService((await userController.verifyEmail(token, req)), res);
 })
 
+router.get("/me", async (req, res)=>{
+    returnMessageService((await userController.me(req)), res);
+})
+
 router.get("/:id", async (req, res) =>{ 
     let ra = req.socket.remoteAddress
-    if(restrictionsService.isCapacity("userGet", ra)){
-        returnMessageService(new ReturnMessage("-1", "You're sending too many requests. Please try again later", 400, 'error'), res)
-        return
-    }
-    
-returnMessageService((await userController.get(req.params.id, req)), res);    restrictionsService.addInstance("userGet", ra)
+    //if(restrictionsService.isCapacity("userGet", ra, res))return
+    returnMessageService((await userController.get(req.params.id, req)), res);    
+    //restrictionsService.addInstance("userGet", ra)
 })
 
 module.exports = router

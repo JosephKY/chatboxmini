@@ -4,6 +4,7 @@ const express = require("express");
 // Services
 const returnMessageService = require("../services/returnmessage.service");
 const arrReqService = require("../services/arrreq.service")
+const restrictionsService = require("../services/restrictions.service")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model"); 
@@ -14,7 +15,9 @@ const postsController = require("../controllers/posts.controller")
 // Work
 const router = express.Router()
 
-router.get("/create", async (req, res)=>{
+
+
+router.post("/create", async (req, res)=>{
     let arrreq = arrReqService.req(req.query, ["content"])
     if(arrreq !== true){
         returnMessageService(new ReturnMessage("1306", `Missing parameter: ${arrreq}`, 400, 'error'), res)
