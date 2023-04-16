@@ -68,4 +68,41 @@ async function get(postid){
     }
 }
 
-module.exports = {get}
+async function create(userid, content){
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1300", "General Failure", 500, "error")
+    }
+
+    let c = Math.floor(Date.now()/1000)
+    let sql = "INSERT INTO posts (created,userid, content) VALUES (?,?,?)";
+    let inserts = [c, userid, content]
+
+    try{
+        let res = (await db.execute(sql, inserts));
+        return res[0].insertId
+    }catch(err){
+        console.log(err)
+        return new ReturnMessage("1301", "General Failure", 500, "error")
+    }
+}
+
+function extractDomains(str) {
+    const urlRegex = /(?<!\w)(https?:\/\/)?(www\.)?([\w-]+\.[\w-]+)(\.[\w-]+)*((?![\w.])|\b)/gi;
+    const domains = [];
+    let match;
+  
+    while ((match = urlRegex.exec(str)) !== null) {
+      let domain = match[3] + (match[4] || '');
+  
+      if (match[2] === 'www.') {
+        domain = domain.replace(/^www\./, '');
+      }
+  
+      domains.push(domain);
+    }
+  
+    return domains;
+  }
+
+module.exports = {get,create,extractDomains}
