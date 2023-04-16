@@ -1,12 +1,11 @@
 // Modules
 const express = require("express")
 const cookies = require("cookie-parser")
-const nodemailer = require("nodemailer")
-const SMTPConnection = require("nodemailer/lib/smtp-connection");
 const fs = require("fs")
 
 // Services
 const restrictionsService = require("./src/services/restrictions.service")
+const localeService = require("./src/services/locale.service")
 
 // Routes
 const apiRoute = require("./src/routes/api.route")
@@ -30,7 +29,7 @@ blackbook.toString().replaceAll("\r", "").split("\n").forEach(b=>{
 
 const app = express()
 const port = 3000
-const defaultLocale = "en_us"
+
 
 app.use(cookies());
 app.set("view engine", "ejs");
@@ -41,23 +40,43 @@ app.use(express.static('public', {
 
 app.use("/api", apiRoute)
 
-app.use("/", async (req, res)=>{
-    let locale = defaultLocale
-    if(!req.cookies || !req.cookies.locale){
-        locale = defaultLocale
-        res.cookie("locale", defaultLocale, { maxAge: 86400000000 })
-    } 
-    locale = req.cookies.locale
-
-    let localeData = require(`./src/locale/${defaultLocale}.locale.js`);
+function renderPage(req, res, page) {
     try {
-        localeData = require(`./src/locale/${locale}.locale.js`);
-    } catch(e){
-        localeData = require(`./src/locale/${defaultLocale}.locale.js`);
+      const localeData = localeService.getLocale(req, res);
+      const replicated = {
+        locale: localeData,
+        page: page,
+      };
+      res.render("index", replicated);
+    } catch (error) {
+      // Handle any errors that might occur
+      res.status(500).send("Internal Server Error")
     }
-    
-    res.render("index", localeData)
+  }
+  
+
+app.get("/", async(req, res)=>{
+    renderPage(req, res, "home")
 })
+
+app.get("/home", async(req, res)=>{
+    renderPage(req, res, "home")
+})
+
+app.get("/signout", async(req, res)=>{
+    res.clearCookie("jwt");
+    res.redirect("/")
+})
+
+app.get("/login", async(req, res)=>{
+    renderPage(req, res, "login")
+})
+
+app.get('*', async (req, res)=>{
+    renderPage(req, res, "notfound")
+})
+
+
 
 
 

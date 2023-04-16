@@ -1,0 +1,124 @@
+:root {
+    --app-width: 950px;
+    --font: Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+span,
+p,
+a,
+button,
+label {
+    font-family: var(--font);
+}
+
+body {
+    background-image: url('/assets/bodynoise.png'), linear-gradient(#FFF, #000);
+    min-height: calc(100vh - 20px);
+    margin: 0;
+}
+
+#app {
+    width: var(--app-width);
+    margin: 10px auto;
+    min-height: calc(100vh - 20px);
+}
+
+
+#logo {
+    width: 90px;
+}
+
+#logoContainer {
+    display: inline-block;
+}
+
+#header {
+    display: flex;
+}
+
+#profile {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#profile div {
+    height: fit-content;
+}
+
+#notification {
+    position: fixed;
+    background: #d02525;
+    color: white;
+    width: 970px;
+    left: 50%;
+    translate: -50%;
+    margin: 0;
+    padding: 10px;
+    text-align: center;
+    box-shadow: black 0px 0px 2px;
+    transition: .2s;
+    bottom: -50px;
+    z-index: 100;
+    user-select: none;
+}
+
+#notification.visible {
+    bottom: 10px;
+}
+
+#notification:hover {
+    cursor: pointer;
+}
+
+.button {
+    background: linear-gradient(#507CFF, #2252E1) !important;
+    color: #FFF !important;
+    border-radius: 3px !important;
+    border: 1px solid #2252E1 !important;
+    font-size: 0.9em;
+    padding: .5em 1em;
+}
+
+.button:hover {
+    cursor: pointer;
+    filter: brightness(0.9)
+}
+
+.button[disabled] {
+    background: linear-gradient(#AAB2CC, #91A5E1) !important;
+    border-color: #91A5E1 !important;
+    color: #E8E8E8 !important;
+  }
+
+.button[disabled]:hover {
+    cursor: default;
+    filter: brightness(1)
+}
+
+#profileDetails a {
+    margin-bottom: 5px;
+    display: inline-block;
+    text-align: right;
+    width: 100%;
+    color: #3154DF;
+}
+
+#profileDetails a:hover {
+    color: #4e6ade
+}
+
+#welcomeMsg {
+    margin: 0;
+    color: #494949;
+}

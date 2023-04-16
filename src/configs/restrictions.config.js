@@ -6,7 +6,7 @@ let restrictions = {
         
     ],
     "sendVerificationEmail":[
-        [300, 1],
+        [4, 1],
         [10800, 5],
         [86400, 10],
         [(2628000 * 3), 30]

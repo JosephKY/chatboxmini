@@ -1,3 +1,6 @@
+const ReturnMessage = require("../models/returnMessage.model")
+const returnMessageService = require("../services/returnmessage.service")
+
 let activities = {}
 
 function addActivity(name){
@@ -38,7 +41,7 @@ function addInstance(activityName, id){
     return figure
 }
 
-function isCapacity(activityName, id){
+function isCapacity(activityName, id, prosecute=false){
     let activity = activities[activityName]
     if(!activity)return false;
 
@@ -47,17 +50,44 @@ function isCapacity(activityName, id){
 
     let cap = false;
     let restrictions = activity.restrictions
+    let first = false;
     restrictions.forEach(restriction=>{
         let max = restriction.max
         let length = restriction.length
         let caught = 0 
         let now = Math.floor(Date.now() / 1000)
+        let wait = false;
         console.log(max, length, now)
         figure.forEach(instance=>{
-            if((now - instance) < length)caught = caught + 1;
+            if((now - instance) < length){
+                caught = caught + 1;
+                let mywait = length - (now - instance)
+                if(wait == false || wait < mywait){
+                    wait = mywait
+                }
+            }
         })
-        if(caught >= max)cap = true;
+        if(caught >= max){
+            cap = true;
+            if(first == false || first < wait){
+
+            }
+            first = wait
+        }
+        console.log(caught)
     })
+
+    if(prosecute != false && cap == true){
+        returnMessageService(
+            new ReturnMessage(
+                "1", 
+                `You're making too many requests. Please try again in ${first} seconds`,
+                400,
+                'error'
+                ), 
+            prosecute)
+    }
+
     return cap;
 }
 

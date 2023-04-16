@@ -124,7 +124,7 @@ function valEmail(email) {
         );
 }
 
-async function create(username, password, email, response) {
+async function create(username, password, email, dob, response) {
     username = String(username);
     password = String(password);
     email = String(email);
@@ -134,8 +134,8 @@ async function create(username, password, email, response) {
         return new ReturnMessage("103", "General Failure", 500, "error");
     }
 
-    let sql = "INSERT INTO users (created, username, password, email) VALUES (?,?,?,?)";
-    let inserts = [Math.floor(Date.now() / 1000), username, (await hashPass(password)), email]
+    let sql = "INSERT INTO users (created, username, password, email, dob) VALUES (?,?,?,?,?)";
+    let inserts = [Math.floor(Date.now() / 1000), username, (await hashPass(password)), email, dob]
     try {
         let res = (await db.execute(sql, inserts))
         let jwt = jwtService.genJWT({ 'sub': res[0].insertId });
@@ -337,4 +337,24 @@ async function verifyEmail(token, userid){
     }
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail }
+function minAge(dateString) {
+    const today = new Date();
+    const birthDate = new Date(dateString);
+    if(birthDate == "Invalid Date")return -1;
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // If the user's birth month and day have not happened yet this year
+    // and they haven't turned the minimum age yet
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    if(age < 13){
+        return false;
+    }
+
+    return Math.floor(birthDate.getTime() / 1000);
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge }
