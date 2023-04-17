@@ -1,1 +1,71 @@
+<div id="notfound">
 <h1>404 Not Found</h1>
+<h3>Cheer up. Look at this cat</h3>
+<img id="kittycat:3"/></br>
+<a id="newcat">Show me another one</a>
+</div>
+<script>
+    let notFoundGifs = [
+        "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",
+        "https://media.giphy.com/media/8vQSQ3cNXuDGo/giphy.gif",
+        "https://media.giphy.com/media/yFQ0ywscgobJK/giphy.gif",
+        "https://media.giphy.com/media/12bjQ7uASAaCKk/giphy.gif",
+        "https://media.giphy.com/media/5i7umUqAOYYEw/giphy.gif",
+        "https://media.giphy.com/media/nR4L10XlJcSeQ/giphy.gif",
+        "https://media.giphy.com/media/l4KibK3JwaVo0CjDO/giphy.gif",
+        "https://media.giphy.com/media/WYEWpk4lRPDq0/giphy.gif",
+        "https://media.giphy.com/media/MWSRkVoNaC30A/giphy.gif",
+        "https://media.giphy.com/media/QObPo575HQHlGMhbae/giphy.gif",
+        "https://media.giphy.com/media/118lTJFyUJYyze/giphy.gif",
+        "https://media.giphy.com/media/11IYKJ5sN73twk/giphy.gif",
+        "https://media.giphy.com/media/47EstTgsR1vpK/giphy.gif",
+        "https://media.giphy.com/media/SVYrs1hU0SiAf1nw1n/giphy.gif",
+        "https://media.giphy.com/media/3oEduVGyuRGuZXaqys/giphy.gif",
+        "https://media.giphy.com/media/DqSReZdWmjS7K/giphy.gif",
+        "https://media.giphy.com/media/ZE6HYckyroMWwSp11C/giphy.gif",
+        "https://media.giphy.com/media/KZGN8tU5OmFJC/giphy.gif",
+        "https://media.giphy.com/media/r7Y17m4862kdW/giphy.gif",
+        "https://media.giphy.com/media/Wsk5V26W0jVYur1f9Z/giphy.gif",
+        "https://media.giphy.com/media/vlUCWLGF7jpwA/giphy.gif",
+        "https://media.giphy.com/media/EPaebv5YaeqWs/giphy.gif",
+        "https://media.giphy.com/media/3o7btPYDFhb7rNANqw/giphy.gif",
+        "https://media.giphy.com/media/8I7a41uPPoFSU/giphy.gif",
+        "https://media.giphy.com/media/10bjbpyWbVmDXq/giphy.gif",
+        "https://media.giphy.com/media/hzBc3HCFc0icM/giphy.gif",
+        "https://media.giphy.com/media/6bAZXey5wNzBC/giphy.gif",
+        "https://media.giphy.com/media/xBAreNGk5DapO/giphy.gif",
+        "https://media.giphy.com/media/fjxMEdpMT9qDyBVLL4/giphy.gif",
+        "https://media.giphy.com/media/Is0AJv4CEj9hm/giphy.gif",
+        "https://media.giphy.com/media/3xz2BHFXxvFDYwnA9W/giphy.gif",
+        "https://media.giphy.com/media/X3Yj4XXXieKYM/giphy.gif"
+    ];
+
+    let selection;
+    let newcat = document.getElementById("newcat");
+    let kitty = document.getElementById("kittycat:3")
+
+    function showCat(){
+        selection = (Math.floor(Math.random() * notFoundGifs.length) - 1)
+
+        
+        let resource = notFoundGifs[selection]
+        let img = new Image()
+        img.src = resource
+        kitty.src = "/assets/loading.gif"
+        kitty.classList.add("loading")
+        newcat.classList.add("disabled")
+        img.onload = ()=>{
+            newcat.classList.remove("disabled")
+            kitty.classList.remove("loading")
+            kitty.src = resource
+        }
+        
+    }
+
+    showCat()
+
+    newcat.addEventListener("click", ()=>{
+        if(newcat.classList.contains("disabled"))return
+        showCat()
+    })
+</script>

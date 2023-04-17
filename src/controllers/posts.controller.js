@@ -42,7 +42,7 @@ async function create(content, req){
         }
     }
 
-    let creation = (await postsService.create(login.sub, content))
+    let creation = (await postsService.create(login.sub, htmlED.encode(content)))
     return new ReturnMessage("1305", { id: creation }, 200, 'postCreate')
 }
 

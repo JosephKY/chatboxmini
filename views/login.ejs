@@ -16,16 +16,24 @@
 <h3>Don't have an account? Join Feed and make a free account today!</h3>
 
 <h5>Username</h5>
-<input id="signupUsername" placeholder="Username"/></br>
+<input id="signupUsername" placeholder="Username" maxlength="32"/></br>
+<h6 id="signupUsernameFlair">3-32 alphanumeric characters</h6>
 
 <h5>Email</h5>
 <input id="signupEmail" type="email" placeholder="Email"/></br>
+<h6>Verification required to start posting</h6>
 
 <h5>Date of Birth</h5>
 <input id="signupDob" type="date"/>
+<h6>13+ Only</h6>
 
 <h5>Password</h5>
 <input id="signupPassword" type="password" placeholder="Password"/></br>
+<h6>8-128 characters</h6>
+
+<h5>Verify Password</h5>
+<input id="signupVerifyPassword" type="password" placeholder="Verify Password"/></br>
+<h6>Passwords should match</h6>
 
 <input type="checkbox" id="signupAgreement">
 <label for="signupAgreement">I agree to the Terms of Service and Privacy Policy</label></br>

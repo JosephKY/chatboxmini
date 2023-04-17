@@ -8,8 +8,10 @@ let signupUsername = document.getElementById("signupUsername")
 let signupEmail = document.getElementById("signupEmail")
 let signupDob = document.getElementById("signupDob")
 let signupPassword = document.getElementById("signupPassword")
+let signupVerifyPassword = document.getElementById("signupVerifyPassword")
 let signupAgreement = document.getElementById("signupAgreement")
 let signupSubmit = document.getElementById("signupSubmit")
+let signupUsernameFlair = document.getElementById("signupUsernameFlair")
 
 let userConfig = {
     minUsernameLength: 3,
@@ -67,6 +69,12 @@ function checkLogin(){
     }
 }
 
+function setDisableBatch(arr, set=true){
+    arr.forEach(el=>{
+        el.disabled = set
+    })
+}
+
 [loginUsernameOrEmail, loginPassword].forEach(el=>{
     el.addEventListener("input", ()=>{
         checkLogin()
@@ -79,7 +87,8 @@ function evalSignup(){
         isEmpty(signupEmail) ||
         isEmpty(signupPassword) ||
         signupAgreement.checked == false ||
-        signupDob.valueAsNumber == null
+        signupDob.valueAsNumber == null ||
+        signupDob.value == ""
     )return false;
     return true;
 }
@@ -98,7 +107,7 @@ function checkSignup(){
     })
 })
 
-signupSubmit.onclick = ()=>{
+signupSubmit.onclick = async()=>{
     if(!minAge(signupDob.value)){
         notification("Sorry, but you must be at least 13 years old to sign up", 5000);
         return;
@@ -123,16 +132,24 @@ signupSubmit.onclick = ()=>{
         notification(`Password must be between ${userConfig.minPasswordLength} and ${userConfig.maxPasswordLength} characters`, 5000);
         return;
     }
-}
 
-loginSubmit.onclick = async ()=>{
+    if(signupVerifyPassword.value != signupPassword.value){
+        notification("Passwords do not match", 3000);
+        return;
+    }
+
+    setDisableBatch([signupUsername, signupEmail, signupDob, signupPassword, signupVerifyPassword, signupAgreement, signupSubmit])
+
+    console.log(signupDob.value)
     let res = (await ajax({
-        "url":"/api/users/login",
+        "url":"/api/users/create",
         "data":{
-            "usernameOrEmail":loginUsernameOrEmail.value,
-            "password":loginPassword.value
+            username: signupUsername.value,
+            password: signupPassword.value,
+            email: signupEmail.value,
+            dob: signupDob.value,
         },
-        "method":"GET"
+        "type":"POST"
     }))
     console.log(res)
     if(res.type == "error"){
@@ -140,7 +157,58 @@ loginSubmit.onclick = async ()=>{
     } else {
         window.location.href = "/"
     }
+
+    setDisableBatch([signupUsername, signupEmail, signupDob, signupPassword, signupVerifyPassword, signupAgreement, signupSubmit], false)
 }
+
+loginSubmit.onclick = async ()=>{
+    setDisableBatch([loginUsernameOrEmail, loginSubmit, loginPassword])
+    let res = (await ajax({
+        "url":"/api/users/login",
+        "data":{
+            "usernameOrEmail":loginUsernameOrEmail.value,
+            "password":loginPassword.value
+        },
+        "type":"GET"
+    }))
+    console.log(res)
+    if(res.type == "error"){
+        notification(res.data, 5000);
+    } else {
+        window.location.href = "/"
+    }
+    setDisableBatch([loginUsernameOrEmail, loginSubmit, loginPassword], false)
+}
+
+let lastSignupUsernameInput = 0
+signupUsername.oninput = (inp=>{
+    let now = Date.now()
+    lastSignupUsernameInput = now
+    let username = signupUsername.value
+
+
+
+    setTimeout(async ()=>{
+        if(lastSignupUsernameInput != now)return
+        let check = (await ajax({
+            "url":"/api/users/usernameTaken",
+            "data":{
+                "username":username
+            },
+            "method":"GET"
+        })).data;
+        console.log(check)
+        signupUsernameFlair.style.color = "red"
+        if(check == -1){
+            signupUsernameFlair.innerHTML = "Invalid username"
+        } else if(check === false){
+            signupUsernameFlair.style.color = "green"
+            signupUsernameFlair.innerHTML = "Username available"
+        } else if(check === true){
+            signupUsernameFlair.innerHTML = "Username taken"
+        }
+    }, 500)
+})
 
 
 async function app(){

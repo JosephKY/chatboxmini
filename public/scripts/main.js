@@ -19,11 +19,12 @@ function ajax(params) {
     });
 }
 
-function notification(content, duration = 0) {
+function notification(content, duration = 0, bgcolor="#d02525") {
     let now = Date.now()
     lastNotifCall = now
     notifElement.innerHTML = content
     notifElement.classList.add("visible")
+    notifElement.style.backgroundColor = bgcolor
     if (duration > 0) {
         setTimeout(() => {
             if (lastNotifCall != now) return
@@ -45,6 +46,7 @@ async function main(){
         document.getElementById("profileDetails").classList.remove("hidden")
         document.getElementById("signin").classList.add("hidden")
         document.getElementById("welcomeMsg").innerHTML = document.getElementById("welcomeMsg").innerHTML.replace("%username%", me.username)
+        document.getElementById("myprofileLink").href = `/users/${me.id}`
     }
 
     try {
