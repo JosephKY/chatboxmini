@@ -1,8 +1,12 @@
+<!-- I had a lot of fun with this :3 -->
+
 <div id="notfound">
-<h1>404 Not Found</h1>
-<h3>Cheer up. Look at this cat</h3>
-<img id="kittycat:3"/></br>
-<a id="newcat">Show me another one</a>
+    <h1>404 Not Found</h1>
+    <h3>Cheer up. Look at this cat</h3>
+    <img id="kittycat:3" /></br>
+    <a id="newcat">Show me another one</a>
+    <p id="catcounter">0/?</p>
+    <p id="acakeforyou" class="hidden">🎉🎂🎊</p>
 </div>
 <script>
     let notFoundGifs = [
@@ -40,32 +44,48 @@
         "https://media.giphy.com/media/X3Yj4XXXieKYM/giphy.gif"
     ];
 
+    let previous = []
+
     let selection;
     let newcat = document.getElementById("newcat");
     let kitty = document.getElementById("kittycat:3")
 
-    function showCat(){
-        selection = (Math.floor(Math.random() * notFoundGifs.length) - 1)
+    function showCat() {
 
-        
+        if (previous.length == notFoundGifs.length) {
+            document.getElementById('acakeforyou').classList.remove("hidden")
+            previous = []
+        }
+
+        selection = (Math.floor(Math.random() * notFoundGifs.length))
+        console.log(selection)
+        while (previous.includes(selection)) {
+            console.log("inc")
+            selection = (Math.floor(Math.random() * notFoundGifs.length))
+        }
+        console.log(selection)
+
+        previous.push(selection)
+
         let resource = notFoundGifs[selection]
         let img = new Image()
         img.src = resource
         kitty.src = "/assets/loading.gif"
         kitty.classList.add("loading")
         newcat.classList.add("disabled")
-        img.onload = ()=>{
+        document.getElementById('catcounter').innerHTML = `${previous.length}/${notFoundGifs.length}`
+        img.onload = () => {
             newcat.classList.remove("disabled")
             kitty.classList.remove("loading")
             kitty.src = resource
         }
-        
+
     }
 
     showCat()
 
-    newcat.addEventListener("click", ()=>{
-        if(newcat.classList.contains("disabled"))return
+    newcat.addEventListener("click", () => {
+        if (newcat.classList.contains("disabled")) return
         showCat()
     })
 </script>
