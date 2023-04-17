@@ -8,6 +8,7 @@ h2,
 h3,
 h4,
 h5,
+h6,
 span,
 p,
 a,
@@ -106,8 +107,11 @@ body {
     filter: brightness(1)
 }
 
+#profileDetails * {
+    margin-bottom: 5px !important;
+}
+
 #profileDetails a {
-    margin-bottom: 5px;
     display: inline-block;
     text-align: right;
     width: 100%;
@@ -121,4 +125,44 @@ body {
 #welcomeMsg {
     margin: 0;
     color: #494949;
+}
+
+#kittycat\:3 {
+    width: 400px;
+}
+
+#kittycat\:3.loading {
+    width: 50px;
+}
+
+#newcat {
+    color: blue;
+    text-decoration: underline;
+    display: inline-block;
+    margin-top: 10px;
+}
+
+#newcat.disabled {
+    color: grey;
+    text-decoration: none;
+}
+
+#newcat:hover {
+    cursor: pointer;
+}
+
+#newcat.disabled:hover {
+    cursor: default;
+}
+
+#notfound {
+    width: fit-content;
+    margin: auto;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+}
+
+#notfound h3 {
+    margin-top: 0;
 }

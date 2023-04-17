@@ -2,6 +2,7 @@
 const express = require("express");
 const ReturnMessage = require("../models/returnMessage.model");
 const geo = require("geoip-lite")
+const bodyParser = require('body-parser')
 
 // Services
 const arrReq = require("../services/arrreq.service");
@@ -13,14 +14,16 @@ const userController = require("../controllers/user.controller")
 
 // Work
 const router = express.Router()
+const bodyparser = require('body-parser');
+const urlencodedparser = bodyparser.urlencoded({extended:false})
 
-router.post("/create", async (req, res)=>{
-    let paramsReq = arrReq.req(req.query, ["username","password","email","dob"]);
+router.post("/create", urlencodedparser, async (req, res)=>{
+    let paramsReq = arrReq.req(req.body, ["username","password","email","dob"]);
     if(paramsReq != true){
         returnMessageService(new ReturnMessage("107", `Missing parameter: ${paramsReq}`, 400, "error"), res);
         return;
     }
-    returnMessageService((await userController.create(req.query.username, req.query.password, req.query.email, req.query.dob, req, res)), res);
+    returnMessageService((await userController.create(req.body.username, req.body.password, req.body.email, req.body.dob, req, res)), res);
     return;
 })
 
@@ -47,6 +50,15 @@ router.get("/verify", async (req, res)=>{
 
 router.get("/me", async (req, res)=>{
     returnMessageService((await userController.me(req)), res);
+})
+
+router.get("/usernameTaken", async (req, res) => {
+    let paramsReq = arrReq.req(req.query, ["username"]);
+    if(paramsReq != true){
+        returnMessageService(new ReturnMessage("1600", `Missing parameter: ${paramsReq}`, 400, "error"), res);
+        return;
+    }
+    returnMessageService((await userController.usernameTaken(req.query.username)), res);
 })
 
 router.get("/:id", async (req, res) =>{ 

@@ -139,4 +139,37 @@ async function me(req){
     return get(login.sub, req);
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me }
+async function usernameTaken(username){
+    username = String(username)
+    if(!(await userService.usernameValidate(username)) || username.length < userConfig.minUsernameLength || username.length > userConfig.maxUsernameLength){
+        return new ReturnMessage(
+            "1603",
+            -1,
+            200,
+            "usernameTaken"
+        )
+    }
+
+    let user = (await userService.getIdByUsername(username))
+    if(user.constructor != undefined && user.constructor.name == "ReturnMessage"){
+        if(user.code == "202"){
+        return new ReturnMessage(
+            "1601",
+            false,
+            200,
+            "usernameTaken"
+        )
+        } else {
+            return user;
+        }
+    } else {
+        return new ReturnMessage(
+            "1602",
+            true,
+            200,
+            "usernameTaken"
+        )
+    }
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken }

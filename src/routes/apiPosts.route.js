@@ -14,16 +14,16 @@ const postsController = require("../controllers/posts.controller")
 
 // Work
 const router = express.Router()
+const bodyparser = require('body-parser');
+const urlencodedparser = bodyparser.urlencoded({extended:false})
 
-
-
-router.post("/create", async (req, res)=>{
-    let arrreq = arrReqService.req(req.query, ["content"])
+router.post("/create", urlencodedparser, async (req, res)=>{
+    let arrreq = arrReqService.req(req.body, ["content"])
     if(arrreq !== true){
         returnMessageService(new ReturnMessage("1306", `Missing parameter: ${arrreq}`, 400, 'error'), res)
         return
     }
-    returnMessageService((await postsController.create(req.query.content, req)), res)
+    returnMessageService((await postsController.create(req.body.content, req)), res)
 })
 
 router.get("/feed/:type", async (req, res)=>{
