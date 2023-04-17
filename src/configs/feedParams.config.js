@@ -1,7 +1,10 @@
 let feedParams = {
     "all":[
-        "startingId",
         "max"
+    ],
+    "user":[
+        "max",
+        "userid"
     ]
 }
 

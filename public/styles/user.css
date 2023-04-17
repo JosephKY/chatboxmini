@@ -1,0 +1,30 @@
+#verifiedTick {
+    display: inline-block;
+    width: 26px;
+    height: 26px;
+    margin-left: 10px;
+    border-radius: 100px;
+}
+
+#profileHeader {
+    margin: 10px 0;
+}
+
+#profileHeaderContainer {
+    display: flex;
+    align-items: center;
+}
+
+#verifiedTick:hover {
+    cursor: pointer;
+    box-shadow: #00000047 0 0 5px;
+}
+
+#userContent {
+    display: flex;
+    width: fit-content;
+    flex-flow: column;
+    margin: auto;
+    align-items: center;
+}
+
