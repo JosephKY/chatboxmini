@@ -129,6 +129,8 @@ body {
 
 #kittycat\:3 {
     width: 400px;
+    height: 400px;
+    object-fit: contain;
 }
 
 #kittycat\:3.loading {
