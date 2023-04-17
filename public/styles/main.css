@@ -168,3 +168,7 @@ body {
 #notfound h3 {
     margin-top: 0;
 }
+
+#myprofileLink {
+    display: inline !important;
+  }
