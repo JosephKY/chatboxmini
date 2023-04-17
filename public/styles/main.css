@@ -13,7 +13,8 @@ span,
 p,
 a,
 button,
-label {
+label,
+textarea {
     font-family: var(--font);
 }
 
@@ -100,7 +101,7 @@ body {
     background: linear-gradient(#AAB2CC, #91A5E1) !important;
     border-color: #91A5E1 !important;
     color: #E8E8E8 !important;
-  }
+}
 
 .button[disabled]:hover {
     cursor: default;
@@ -171,4 +172,55 @@ body {
 
 #myprofileLink {
     display: inline !important;
+}
+
+
+.feedPostUsername:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.feedPostUsername {
+    font-weight: 700;
+}
+
+.feedContainer {
+    min-width: 400px;
+    max-height: 400px;
+    overflow-y: scroll;
   }
+
+.feedPost {
+    box-sizing: border-box;
+    padding: 15px;
+    background: linear-gradient(#FFF, #EEE);
+    border-bottom: 1px solid #AAA;
+}
+
+.feedPostCreated {
+    margin-left: 5px;
+}
+
+.feedPostContent {
+    width: 100%;
+    box-sizing: border-box;
+    resize: none;
+    border: none;
+    padding: 0;
+    background: transparent;
+    font-size: 1.2em;
+    overflow: hidden;
+    margin-top: 5px;
+    outline: 0 !important
+}
+
+.feedPostInfo {
+    display: flex;
+    align-items: center;
+}
+
+.feedPostVerifiedTick {
+    width: 16px;
+    margin-left: 5px;
+    height: 16px;
+}

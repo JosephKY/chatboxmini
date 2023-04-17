@@ -76,7 +76,7 @@ async function feed(type, req, params = {}) {
                 return new ReturnMessage("1203", "Invalid parameter startingId", 400, 'error');
             }
 
-            let sql = "SELECT id FROM posts WHERE id > ? ORDER BY id DESC LIMIT ?";
+            let sql = "SELECT id FROM posts WHERE id < ? ORDER BY id DESC LIMIT ?";
             let inserts = [sId, max];
 
             try {
@@ -134,7 +134,7 @@ async function feed(type, req, params = {}) {
                 return new ReturnMessage("1208", "Invalid parameter startingId", 400, 'error');
             }
 
-            let sql = "SELECT id FROM posts WHERE id > ? AND userid LIKE ? ORDER BY id DESC LIMIT ?";
+            let sql = "SELECT id FROM posts WHERE id < ? AND userid LIKE ? ORDER BY id DESC LIMIT ?";
             let inserts = [sId, params.userid, max];
 
             let db = (await dbService.newdb())

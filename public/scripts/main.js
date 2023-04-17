@@ -73,18 +73,31 @@ notifElement.addEventListener("click", () => {
 let me;
 
 class Feed {
-    constructor(containingElement, type){
+    constructor(containingElement, type, onEndScroll){
         this.container = document.createElement("div")
         this.container.classList.add("feedContainer")
         containingElement.appendChild(this.container)
 
         this.noload = false;
+        this.onEndScroll = onEndScroll
+        this.lastPostId = 0;
+
+        this.container.addEventListener("scroll", ()=>{
+            if(this.container.scrollTop == (this.container.scrollHeight - this.container.clientHeight)){
+                try{
+                    this.onEndScroll()
+                }catch(err){
+
+                }
+            }
+        })
 
         this.type = type
     }
 
     async load(params){
         if(this.noload)return;
+        this.noload = true
         let load = (await ajax({
             "url":`/api/posts/feed/${this.type}`,
             "type":"GET",
@@ -94,6 +107,14 @@ class Feed {
         if(load.type == 'error')return;
 
         let posts = load.data;
+
+        this.lastPostId = this.lastPostId + (params.max || 1)
+        if(posts.length > 0){
+            this.lastPostId = posts[posts.length - 1].id
+        } else {
+            return
+        }
+
         posts.forEach(async post=>{
             if(post.restrictions.length > 0)return;
 
@@ -110,22 +131,34 @@ class Feed {
             let postUsernameElement = document.createElement("span")
             postUsernameElement.innerHTML = postUser.username;
             postUsernameElement.classList.add("feedPostUsername")
+            postUsernameElement.addEventListener("click", ()=>{
+                window.location.href = `/users/${post.userid}`
+            })
             postInfoElement.appendChild(postUsernameElement)
+
+            if(postUser.verified == 1){
+                let postVerifiedTickElement = document.createElement("img")
+                postVerifiedTickElement.src = '/assets/verified.png'
+                postVerifiedTickElement.classList.add("feedPostVerifiedTick")
+                postInfoElement.appendChild(postVerifiedTickElement)
+            }
 
             let postCreatedElement = document.createElement("span")
             postCreatedElement.innerHTML = (new Date(post.created)).toDateString();
             postCreatedElement.classList.add("feedPostCreated")
             postInfoElement.appendChild(postCreatedElement)
 
-            let postContent = document.createElement("p")
+            let postContent = document.createElement("textarea")
             postContent.innerHTML = post.content
             postContent.classList.add('feedPostContent')
+            postContent.style.height = `calc(${postContent.scrollHeight}px + 1.2em)`
+            postContent.readOnly = true
             postElement.appendChild(postContent)
 
             this.container.appendChild(postElement)
-            console.log(post)
         })
-        //console.log(load)
+
+        this.noload = false;
     }
 }
 
