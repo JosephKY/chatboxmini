@@ -111,7 +111,6 @@ async function verifyPass(hash, password){
     try{
         return (await argon.verify(hash, password, { secret: Buffer.from(jwtConfig.key) }));
     } catch(err){
-        console.log(err)
         return false;
     }
 }
@@ -176,7 +175,7 @@ async function login(usernameOrEmail, password, response) {
         }
 
         try {
-            if(!verifyPass(res[0].password, password)){
+            if(!(await verifyPass(res[0].password, password))){
                 return new ReturnMessage("405", "Bad Password", 400, "error");
             }
         }catch(err){
