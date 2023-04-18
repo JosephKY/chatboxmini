@@ -138,7 +138,7 @@ async function create(username, password, email, dob, response) {
     try {
         let res = (await db.execute(sql, inserts))
         let jwt = jwtService.genJWT({ 'sub': res[0].insertId });
-        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true })
+        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite:"Strict" })
         return new ReturnMessage(
             "107",
             {
@@ -184,7 +184,7 @@ async function login(usernameOrEmail, password, response) {
         }
 
         let jwt = jwtService.genJWT({ 'sub': res[0].id });
-        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true })
+        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite:"Strict" })
         return new ReturnMessage(
             "404",
             {

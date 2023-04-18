@@ -33,6 +33,13 @@ body {
 
 #logo {
     width: 90px;
+    transition: .2s;
+    border-radius: 11px;
+}
+
+#logo:hover {
+    cursor: pointer;
+    box-shadow: #00000080 0 0 10px;
 }
 
 #logoContainer {
@@ -187,7 +194,7 @@ body {
 .feedContainer {
     min-width: 400px;
     max-height: 400px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 
 .feedPost {
@@ -224,3 +231,37 @@ body {
     margin-left: 5px;
     height: 16px;
 }
+
+
+.postRestrictionFlairIcon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.75;
+    margin-right: .25em;
+  }
+  .postRestrictionFlairContainer {
+    display: flex;
+  }
+  .postRestrictionFlair {
+    font-size: 0.9em;
+    font-weight: bold;
+  }
+  .postRestrictionContainer {
+    background: #D9D9D9;
+    border-radius: 10px;
+    border: 1px solid #AAA;
+    box-sizing: border-box;
+    padding: 10px;
+    margin-top: 10px;
+    display: flex;
+    flex-flow: column;
+  }
+  .postRestrictionContent {
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 300px;
+  }
+  .postRestrictionContentContainer {
+    flex: 1;
+    flex-grow: 1;
+  }
