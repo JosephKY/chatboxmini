@@ -180,4 +180,14 @@ async function sendResetEmail(usernameOrEmail, req){
     return new ReturnMessage("1701", "If an account by the provided username/email exists, and the account's email is verified, a password reset email should be sent", 200, 'resetPassword');
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail }
+async function resetPassword(tokenOrCurrentPassword, newPassword, req){
+    newPassword = String(newPassword)
+
+    if (newPassword.length < userConfig.minPasswordLength || newPassword.length > userConfig.maxPasswordLength) {
+        return new ReturnMessage("1730", `Password must be between ${userConfig.minPasswordLength} and ${userConfig.maxPasswordLength} characters`, 400, "error");
+    }
+
+    return (await userService.resetPassword(tokenOrCurrentPassword, newPassword, req));
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword }

@@ -439,4 +439,84 @@ async function sendResetEmail(usernameOrEmail) {
     }
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail }
+async function setPassword(userid, newPassword){
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1711", "General Failure", 500, "error");
+    }
+
+    newPassword = (await hashPass(newPassword))
+
+    let sql = "UPDATE users SET password = ? WHERE id LIKE ?";
+    let inserts = [newPassword, userid]
+    try {
+        (await db.execute(sql, inserts))
+        return true;
+    } catch(err){
+        console.log(err)
+        return new ReturnMessage("1712", "General Failure", 500, "error");
+    }
+}
+
+async function resetPassword(tokenOrCurrentPassword, newPassword, req){
+    let login = jwtService.isLoggedIn(req)
+
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1704", "General Failure", 500, "error");
+    }
+
+    if(login != false){
+        let userData = (await get(login.sub))
+        if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
+            return userData;
+        }
+        if(verifyPass(userData.password, tokenOrCurrentPassword) == false)return new ReturnMessage("1706", "Bad Password", 400, 'error')
+        let setPass = (await setPassword(userData.id, newPassword))
+        if(setPass !== true)return setPass;
+        return new ReturnMessage("1707", "Password reset successfully", 200, 'resetPassword')
+    }
+
+    let sql = "SELECT * FROM reset WHERE token LIKE ?";
+    let inserts = [tokenOrCurrentPassword];
+
+    try {
+        let tokenResults = (await db.execute(sql, inserts));
+        tokenResults = tokenResults[0]
+
+        if(tokenResults.length == 0){
+            return new ReturnMessage("1708", "Bad token", 400, 'error')
+        } 
+
+        let tokenData = tokenResults[0]
+        if(tokenData.expires < Math.floor(Date.now() / 1000)){
+            return new ReturnMessage("1709", "Expired token", 400, 'error')
+        }
+
+        let userData = (await get(tokenData.userid))
+        if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
+            return userData;
+        }
+
+        let set = (await setPassword(tokenData.userid, newPassword))
+        if(set !== true)return set;
+
+        let newExp = Math.floor(Date.now() / 1000)
+        let tokenId = tokenData.id
+        sql = "UPDATE reset SET expires = ? WHERE id LIKE ?"
+        inserts = [newExp, tokenId];
+        try {
+            (await db.execute(sql, inserts))
+        } catch(err){
+            console.log(err)
+        }
+
+        return new ReturnMessage("1710", "Password reset through token successfully", 200, 'resetPassword')
+
+    } catch(err){
+        console.log(err)
+        return new ReturnMessage("1705", "General Failure", 500, "error");
+    }
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword }
