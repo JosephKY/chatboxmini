@@ -19,14 +19,17 @@ const cacheService = require("./cache.service")
 let emailVerificationHtml = fs.readFileSync("views/emailVerification.ejs").toString('utf-8');
 emailVerificationHtml = emailVerificationHtml.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
 
-async function usernameValidate(username){
+let resetPasswordEmail = fs.readFileSync("views/resetPasswordEmail.ejs").toString('utf-8');
+resetPasswordEmail = resetPasswordEmail.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
+
+async function usernameValidate(username) {
     var regex = /^[a-zA-Z0-9]+$/;
     return regex.test(username);
 }
 
-async function get(userid){
+async function get(userid) {
     let cache = cacheService.getCache("user", userid)
-    if(cache != false){
+    if (cache != false) {
         return cache;
     }
 
@@ -47,7 +50,7 @@ async function get(userid){
         db.end()
         let ret = res[0];
         let user = new userModel(ret.id, ret.created, ret.username, ret.password, ret.email, ret.emailverified, ret.suspended, ret.verified, ret.dob)
-        
+
         cacheService.setCache("user", userid, user)
         return user;
     } catch (err) {
@@ -107,10 +110,10 @@ async function hashPass(password) {
     return (await argon.hash(password, { secret: Buffer.from(jwtConfig.key) }));
 }
 
-async function verifyPass(hash, password){
-    try{
+async function verifyPass(hash, password) {
+    try {
         return (await argon.verify(hash, password, { secret: Buffer.from(jwtConfig.key) }));
-    } catch(err){
+    } catch (err) {
         return false;
     }
 }
@@ -138,7 +141,7 @@ async function create(username, password, email, dob, response) {
     try {
         let res = (await db.execute(sql, inserts))
         let jwt = jwtService.genJWT({ 'sub': res[0].insertId });
-        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite:"Strict" })
+        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite: "Strict" })
         return new ReturnMessage(
             "107",
             {
@@ -169,22 +172,22 @@ async function login(usernameOrEmail, password, response) {
     try {
         let res = (await db.execute(sql, inserts))
         res = res[0]
-        
-        if(res.length == 0){
+
+        if (res.length == 0) {
             return new ReturnMessage("403", "Invalid Credentials", 400, "error");
         }
 
         try {
-            if(!(await verifyPass(res[0].password, password))){
+            if (!(await verifyPass(res[0].password, password))) {
                 return new ReturnMessage("405", "Bad Password", 400, "error");
             }
-        }catch(err){
+        } catch (err) {
             console.log(err)
             return new ReturnMessage("406", "General Failure", 400, "error");
         }
 
         let jwt = jwtService.genJWT({ 'sub': res[0].id });
-        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite:"Strict" })
+        response.cookie("jwt", jwt, { maxAge: 86400000000, httpOnly: true, secure: true, sameSite: "Strict" })
         return new ReturnMessage(
             "404",
             {
@@ -194,15 +197,15 @@ async function login(usernameOrEmail, password, response) {
             200,
             "userLogin"
         )
-    }catch(err){
+    } catch (err) {
         console.log(err);
         return new ReturnMessage("402", "General Failure", 500, "error")
     }
 }
 
-async function cancelVerificationEmails(userid){
+async function cancelVerificationEmails(userid) {
     let userData = get(userid);
-    if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
+    if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
         return userData;
     }
 
@@ -217,37 +220,37 @@ async function cancelVerificationEmails(userid){
     try {
         (await db.execute(sql, inserts));
         return true;
-    } catch(err){
+    } catch (err) {
         console.log(err);
         return new ReturnMessage("701", "General Failure", 500, "error")
     }
 }
 
-async function sendVerificationEmail(userid){
+async function sendVerificationEmail(userid) {
     let userData = (await get(userid));
-    if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
+    if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
         return userData;
     }
 
-    if(userData.emailverified == 1){
+    if (userData.emailverified == 1) {
         return new ReturnMessage("804", "Email already verified", 400, "error");
     }
 
     let emailAccount = emailConfig.accounts["no-reply@youcc.xyz"]
 
     let transport = nodemailer.createTransport({
-        "auth":emailAccount.auth,
-        "host":emailAccount.host,
-        "port":emailAccount.port,
-        "secure":emailConfig.secure,
-        "tls":{
-            "rejectUnauthorized":false
+        "auth": emailAccount.auth,
+        "host": emailAccount.host,
+        "port": emailAccount.port,
+        "secure": emailConfig.secure,
+        "tls": {
+            "rejectUnauthorized": false
         },
-        "connectionTimeout":emailConfig.connectionTimeout
+        "connectionTimeout": emailConfig.connectionTimeout
     });
 
     let emailCancel = cancelVerificationEmails(userid)
-    if(emailCancel.constructor != undefined && emailCancel.constructor.name == "ReturnMessage"){
+    if (emailCancel.constructor != undefined && emailCancel.constructor.name == "ReturnMessage") {
         return emailCancel;
     }
 
@@ -265,32 +268,32 @@ async function sendVerificationEmail(userid){
     emailVerHtml = emailVerHtml.replaceAll("%%REPLACEME%%", `${emailConfig.verificationUrl}${token}`)
 
     transport.sendMail({
-        "from":"no-reply@youcc.xyz",
-        "to":"josephshackleford04@gmail.com",
-        "subject":"Verify your email",
-        "html":emailVerHtml
-    }, (err)=>{
-        if(err){
+        "from": "no-reply@youcc.xyz",
+        "to": email,
+        "subject": "Verify your email",
+        "html": emailVerHtml
+    }, (err) => {
+        if (err) {
             console.log("EMAIL ERROR:")
             console.log(err)
         }
     });
-    
+
     let sql = "INSERT INTO emailverification (created, expires, token, email, userid) VALUES (?,?,?,?,?)";
     let inserts = [created, expires, token, email, userid];
     console.log(inserts)
     try {
         (await db.execute(sql, inserts));
         return new ReturnMessage("802", "Verification email sent", 200, "emailVerificationSend");
-    } catch(err) {
+    } catch (err) {
         console.log(err)
         return new ReturnMessage("801", "General Failure", 500, "error")
     }
 }
 
-async function verifyEmail(token, userid){
+async function verifyEmail(token, userid) {
     let userData = (await get(userid));
-    if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
+    if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
         return userData;
     }
 
@@ -301,37 +304,37 @@ async function verifyEmail(token, userid){
 
     let versKnownSql = "SELECT * FROM emailverification WHERE userid LIKE ? AND token LIKE ?";
     let versKnownInserts = [userid, token];
-    try{
+    try {
         let versKnown = (await db.execute(versKnownSql, versKnownInserts));
-        if(versKnown[0].length == 0){
+        if (versKnown[0].length == 0) {
             return new ReturnMessage("902", "Invalid Token", 400, "error");
         }
 
         let ver = versKnown[0][0];
-        if(ver.expires < Math.floor(Date.now() / 1000)){
+        if (ver.expires < Math.floor(Date.now() / 1000)) {
             return new ReturnMessage("903", "Token Expired", 400, "error");
         }
 
-        if(userData.email != ver.email){
+        if (userData.email != ver.email) {
             return new ReturnMessage("904", "Email Mismatch", 400, "error");
         }
 
         let cancel = cancelVerificationEmails(userid)
-        if(cancel.constructor != undefined && cancel.constructor.name == "ReturnMessage"){
+        if (cancel.constructor != undefined && cancel.constructor.name == "ReturnMessage") {
             return cancel;
         }
 
         let emailVer = 1;
         let verifySql = "UPDATE users SET emailverified = ? WHERE id LIKE ?";
         let verifyInserts = [emailVer, userid];
-        try{
+        try {
             (await db.execute(verifySql, verifyInserts))
             return new ReturnMessage("906", "Email verified successfully", 500, "error");
-        } catch(err){
+        } catch (err) {
             console.log(err)
             return new ReturnMessage("905", "General Failure", 500, "error");
         }
-    }catch(err){
+    } catch (err) {
         return new ReturnMessage("901", "General Failure", 500, "error");
     }
 }
@@ -339,21 +342,101 @@ async function verifyEmail(token, userid){
 function minAge(dateString) {
     const today = new Date();
     const birthDate = new Date(dateString);
-    if(birthDate == "Invalid Date")return -1;
+    if (birthDate == "Invalid Date") return -1;
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
-    
+
     // If the user's birth month and day have not happened yet this year
     // and they haven't turned the minimum age yet
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+        age--;
     }
-    
-    if(age < 13){
+
+    if (age < 13) {
         return false;
     }
 
     return Math.floor(birthDate.getTime() / 1000);
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge }
+async function sendResetEmail(usernameOrEmail) {
+    usernameOrEmail = String(usernameOrEmail);
+    console.log(usernameOrEmail)
+
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1700", "General Failure", 500, "error");
+    }
+
+    let mustVerify = 1;
+    let sql = "SELECT * FROM users WHERE (username LIKE ? OR email LIKE ?) AND emailverified LIKE ?";
+    let inserts = [usernameOrEmail, usernameOrEmail, mustVerify];
+    try {
+        let res = (await db.execute(sql, inserts));
+        res = res[0]
+        if (res == undefined || res.length == 0){
+            console.log("no content")
+            return;
+        } 
+
+        let emailAccount = emailConfig.accounts["no-reply@youcc.xyz"]
+
+        let transport = nodemailer.createTransport({
+            "auth": emailAccount.auth,
+            "host": emailAccount.host,
+            "port": emailAccount.port,
+            "secure": emailConfig.secure,
+            "tls": {
+                "rejectUnauthorized": false
+            },
+            "connectionTimeout": emailConfig.connectionTimeout
+        });
+
+        let token = crypto.randomBytes(128).toString('hex');
+        let email = res[0].email;
+        let created = Math.floor(Date.now() / 1000)
+        let expires = created + 600; // 10 Minutes
+        let userid = res[0].id
+
+        let resetPassHtml = resetPasswordEmail
+        resetPassHtml = resetPassHtml.replaceAll("%%REPLACEME%%", `${emailConfig.resetPasswordUrl}${token}`)
+
+        sql = "INSERT INTO reset (created, expires, token, userid) VALUES (?,?,?,?)"
+        inserts = [created, expires, token, userid]
+        try {
+            (await db.execute(sql, inserts))
+        } catch(err){
+            console.log(err)
+            return
+        }
+
+        transport.sendMail({
+            "from": "no-reply@youcc.xyz",
+            "to": email,
+            "subject": "Reset password",
+            "html": resetPassHtml
+        }, (err) => {
+            if (err) {
+                console.log("EMAIL ERROR:")
+                console.log(err)
+            }
+        });
+
+
+        console.log({
+            "from": "no-reply@youcc.xyz",
+            "to": email,
+            "subject": "Reset password",
+            "html": resetPassHtml
+        })
+        console.log("reset done")
+
+
+
+    } catch (err) {
+        console.log(err)
+        return
+    }
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail }
