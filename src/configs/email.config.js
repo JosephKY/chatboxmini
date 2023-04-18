@@ -2,7 +2,7 @@ let email = {
     "connectionTimeout":5000,
     "secure":true,
     "verificationUrl":"http://localhost:3000/users/verify?token=",
-    "resetPasswordUrl":"http://localhost:3000/resetpassword/",
+    "resetPasswordUrl":"http://localhost:3000/resetpassword?token=",
     "supportEmail":"support@youcc.xyz",
     "accounts": {
         "no-reply@youcc.xyz": {

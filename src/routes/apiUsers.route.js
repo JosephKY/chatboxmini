@@ -70,6 +70,15 @@ router.get("/resetpassword", async(req, res)=>{
     returnMessageService((await userController.sendResetEmail(req.query.usernameOrEmail, req)), res)
 })
 
+router.get("/setpassword", async(req, res)=>{
+    let paramsReq = arrReq.req(req.query, ["token", "newPassword"]);
+    if(paramsReq != true){
+        returnMessageService(new ReturnMessage("1715", `Missing parameter: ${paramsReq}`, 400, "error"), res);
+        return;
+    }
+    returnMessageService((await userController.resetPassword(req.query.token, req.query.newPassword, req)), res)
+})
+
 router.get("/:id", async (req, res) =>{ 
     let ra = req.socket.remoteAddress
     //if(restrictionsService.isCapacity("userGet", ra, res))return
