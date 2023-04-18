@@ -72,6 +72,10 @@ app.get("/login", async (req, res) => {
     renderPage(req, res, "login")
 })
 
+app.get("/resetpassword", async (req, res)=>{
+    renderPage(req, res, "resetpassword")
+})
+
 app.get("/users/:id", async (req, res) => {
     renderPage(req, res, "user")
 })

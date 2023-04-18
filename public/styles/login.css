@@ -6,23 +6,6 @@ h5 {
     margin-top: 10px;
 }
 
-input {
-    padding: .25em;
-    outline: none !important;
-    background: #f9f9f9;
-    border: 1px solid #AAA;
-    border-radius: 3px;
-}
-
-input:hover {
-    cursor: pointer;
-    background: #FFF;
-}
-
-input:focus {
-    background: #FFF;
-}
-
 #signupAgreement {
     margin-top: 1em;
 }
@@ -56,4 +39,8 @@ h6 {
     margin: 0;
     margin-top: 5px;
     color: #363636;
+}
+
+#forgotPassword {
+    font-size: 0.8em;
 }

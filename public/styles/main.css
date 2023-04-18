@@ -265,3 +265,20 @@ body {
     flex: 1;
     flex-grow: 1;
   }
+
+  input {
+    padding: .25em;
+    outline: none !important;
+    background: #f9f9f9;
+    border: 1px solid #AAA;
+    border-radius: 3px;
+}
+
+input:hover {
+    cursor: pointer;
+    background: #FFF;
+}
+
+input:focus {
+    background: #FFF;
+}
