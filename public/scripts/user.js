@@ -11,6 +11,11 @@ async function app(){
         return
     }
 
+    if(user.suspended == 1){
+        profileHeader.innerHTML = "Account Suspended"
+        return
+    }
+
     profileHeader.innerHTML = user.username
 
     if(user.verified == 1){
