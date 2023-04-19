@@ -84,12 +84,13 @@ async function feed(type, req, params = {}) {
                 let res = (await db.execute(sql, inserts));
                 res = res[0]
                 for (row of res) {
-                    let ret = (await get(row.id))
+                    let ret = (await get(row.id, req))
                     final.push(ret.data)
                 }
 
                 return new ReturnMessage("1206", final, 200, 'feedGet')
             } catch (err) {
+                console.log(err)
                 return new ReturnMessage("1205", "General Failure", 500, "error")
             }
         } else {
@@ -101,7 +102,7 @@ async function feed(type, req, params = {}) {
                 let res = (await db.execute(sql, inserts));
                 res = res[0]
                 for (row of res) {
-                    let ret = (await get(row.id))
+                    let ret = (await get(row.id, req))
                     final.push(ret.data)
                 }
 
@@ -147,7 +148,7 @@ async function feed(type, req, params = {}) {
                 let res = (await db.execute(sql, inserts));
                 res = res[0]
                 for (row of res) {
-                    let ret = (await get(row.id))
+                    let ret = (await get(row.id, req))
                     final.push(ret.data)
                 }
 
@@ -169,12 +170,13 @@ async function feed(type, req, params = {}) {
                 let res = (await db.execute(sql, inserts));
                 res = res[0]
                 for (row of res) {
-                    let ret = (await get(row.id))
+                    let ret = (await get(row.id, req))
                     final.push(ret.data)
                 }
 
                 return new ReturnMessage("1217", final, 200, 'feedGet')
             } catch (err) {
+                console.log(err)
                 return new ReturnMessage("1216", "General Failure", 500, "error")
             }
         }
@@ -188,6 +190,12 @@ async function restrict(post, remoteAddress) {
     ret.userid = post.userid
     ret.content = post.content
     ret.restrictions = []
+    ret.actions = post.actions
+    ret.deleted = post.deleted
+
+    if(post.deleted == 1){
+        ret.content = ""
+    }
 
     let loc = geo.lookup(remoteAddress)
     post.restrictions.forEach(r => {
@@ -202,13 +210,54 @@ async function restrict(post, remoteAddress) {
     return ret
 }
 
-async function get(id, remoteAddress) {
+async function get(id, req) {
     let post = (await postsService.get(id))
     if (post.constructor != undefined && post.constructor.name == "ReturnMessage") return post;
 
-    let ret = await (restrict(post, remoteAddress));
+    let login = jwtService.isLoggedIn(req)
+    if(login != false){
+        let myid = login.sub
+        if(myid == post.userid){
+            if(post.deleted == 0){
+                post.actions.push("delete")
+            }
+            
+        } else {
+            post.actions.push("report")
+        }
+    }
+
+    let ret = await (restrict(post, req.socket.remoteAddress));
 
     return new ReturnMessage("1104", ret, 200, 'postGet')
 }
 
-module.exports = { get, feed, create }
+async function deletePost(id, req){
+    let post = (await get(id, req))
+
+    if(post.constructor != undefined && post.constructor.name == "ReturnMessage" && post.type == 'error'){
+        return post;
+    }
+
+    if(post.data.deleted == 1){
+        return new ReturnMessage("1900", "Post already deleted", 400, 'error')
+    }
+
+    let login = jwtService.isLoggedIn(req)
+    if(login == false){
+        return new ReturnMessage("1903", "Login required", 401, 'error')
+    }
+
+    if(login.sub != post.data.userid){
+        return new ReturnMessage("1904", "Unauthorized", 403, 'error')
+    }
+
+    let del = (await postsService.deletePost(id))
+    if(del !== true){
+        return del;
+    }
+
+    return new ReturnMessage("1905", "Post deleted successfully", 200, 'postDelete')
+}
+
+module.exports = { get, feed, create, deletePost }

@@ -36,7 +36,7 @@ async function get(postid){
             return user;
         }
 
-        let post = new postModel(ret.id, ret.created, ret.userid, ret.content)
+        let post = new postModel(ret.id, ret.created, ret.userid, ret.content, ret.deleted)
 
         if(user.suspended == 1){
             new postRestrictionModel(post, 0, 0, ["*"], [], "The user that created this post is suspended", true)
@@ -105,4 +105,23 @@ function extractDomains(str) {
     return domains;
   }
 
-module.exports = {get,create,extractDomains}
+async function deletePost(postid){
+
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1901", "General Failure", 500, "error")
+    }
+
+    let setDelete = 1
+    let sql = "UPDATE posts SET deleted = ? WHERE id LIKE ?";
+    let inserts = [setDelete, postid];
+    try{
+        (await db.execute(sql, inserts))
+        cacheService.delCache("post", postid)
+        return true
+    } catch(err){
+        return new ReturnMessage("1902", "General Failure", 500, "error")
+    }
+}
+
+module.exports = {get,create,extractDomains,deletePost}
