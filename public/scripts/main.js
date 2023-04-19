@@ -3,17 +3,17 @@ let lastNotifCall = 0
 
 let cache = {}
 
-function setCache(title, key, object){
-    if(cache[title] == undefined){
+function setCache(title, key, object) {
+    if (cache[title] == undefined) {
         cache[title] = {}
     }
     cache[title][key] = object
 }
 
-function getCache(title, key){
-    if(cache[title] == undefined || cache[title][key] == undefined)return false;
+function getCache(title, key) {
+    if (cache[title] == undefined || cache[title][key] == undefined) return false;
     let ret = cache[title][key];
-    if(ret.constructor != undefined){
+    if (ret.constructor != undefined) {
         ret = Object.assign({}, ret)
     }
     return ret
@@ -26,7 +26,7 @@ function ajax(params) {
                 resolve(response);
             },
             error: function (error) {
-                if(error.responseJSON){
+                if (error.responseJSON) {
                     resolve(error.responseJSON)
                 } else {
                     reject(error);
@@ -37,22 +37,22 @@ function ajax(params) {
     });
 }
 
-async function getUser(userid){
+async function getUser(userid) {
     let c = getCache("user", userid);
-    if(c != false)return c;
+    if (c != false) return c;
 
     let user = (await ajax({
-        "type":"GET",
-        "url":`/api/users/${userid}`
+        "type": "GET",
+        "url": `/api/users/${userid}`
     }))
 
-    if(user.type == 'error')return false;
+    if (user.type == 'error') return false;
 
     setCache('user', userid, user.data)
     return user.data;
 }
 
-function notification(content, duration = 0, bgcolor="#d02525") {
+function notification(content, duration = 0, bgcolor = "#d02525") {
     let now = Date.now()
     lastNotifCall = now
     notifElement.innerHTML = content
@@ -72,8 +72,71 @@ notifElement.addEventListener("click", () => {
 
 let me;
 
+class ContextMenu {
+    constructor(x, y) {
+        let master = document.createElement("div")
+        master.classList.add("contextMenuMaster")
+        master.classList.add("hidden")
+        document.body.appendChild(master)
+        master.addEventListener("click", () => {
+            this.delete()
+        })
+        this.master = master
+
+        let container = document.createElement("div")
+        container.classList.add("contextMenuContainer")
+        container.style.top = `${y}px`
+        container.style.left = `${x}px`
+        master.appendChild(container)
+        this.container = container
+
+        this.itemElements = []
+        return this
+    }
+
+    show() {
+        this.master.classList.remove("hidden")
+        return this
+    }
+
+    delete() {
+        this.master.remove()
+    }
+
+    hide() {
+        this.master.classList.add("hidden")
+        return this
+    }
+
+    add(name, onclick, icon="/assets/action.png", selfDestruct = true) {
+        let itemElement = document.createElement("div")
+        itemElement.classList.add("contextMenuItem")
+        itemElement.addEventListener("click", () => {
+            onclick()
+            if (selfDestruct) {
+                this.delete()
+            }
+        })
+        this.itemElements.push(itemElement)
+        this.container.appendChild(itemElement)
+
+        let itemElementIcon = document.createElement("img")
+        itemElementIcon.src = icon
+        itemElementIcon.classList.add("contextMenuItemIcon")
+        itemElement.appendChild(itemElementIcon)
+
+        let itemElementName = document.createElement("span")
+        itemElementName.innerHTML = name
+        itemElementName.classList.add("contextMenuItemName")
+        itemElement.appendChild(itemElementName)
+        return this;
+    }
+
+
+}
+
 class Feed {
-    constructor(containingElement, type, onEndScroll){
+    constructor(containingElement, type, onEndScroll) {
         this.container = document.createElement("div")
         this.container.classList.add("feedContainer")
         containingElement.appendChild(this.container)
@@ -82,11 +145,11 @@ class Feed {
         this.onEndScroll = onEndScroll
         this.lastPostId = 0;
 
-        this.container.addEventListener("scroll", ()=>{
-            if(this.container.scrollTop == (this.container.scrollHeight - this.container.clientHeight)){
-                try{
+        this.container.addEventListener("scroll", () => {
+            if (this.container.scrollTop == (this.container.scrollHeight - this.container.clientHeight)) {
+                try {
                     this.onEndScroll()
-                }catch(err){
+                } catch (err) {
 
                 }
             }
@@ -95,28 +158,30 @@ class Feed {
         this.type = type
     }
 
-    async load(params){
-        if(this.noload)return;
+    async load(params) {
+        if (this.noload) return;
         this.noload = true
         let load = (await ajax({
-            "url":`/api/posts/feed/${this.type}`,
-            "type":"GET",
-            "data":params
+            "url": `/api/posts/feed/${this.type}`,
+            "type": "GET",
+            "data": params
         }))
 
-        if(load.type == 'error')return;
+        if (load.type == 'error') return;
 
         let posts = load.data;
 
-        if(posts.length == 0)return
+        if (posts.length == 0) return
 
         this.lastPostId = posts[posts.length - 1].id
 
-        posts.forEach(async post=>{
-            
+        posts.forEach(async post => {
+            if(post.deleted == 1){
+                return
+            }
 
             let postUser = (await getUser(post.userid));
-            if(!postUser)return;
+            if (!postUser) return;
 
             let postElement = document.createElement("div")
             postElement.classList.add("feedPost")
@@ -128,12 +193,12 @@ class Feed {
             let postUsernameElement = document.createElement("span")
             postUsernameElement.innerHTML = postUser.username;
             postUsernameElement.classList.add("feedPostUsername")
-            postUsernameElement.addEventListener("click", ()=>{
+            postUsernameElement.addEventListener("click", () => {
                 window.location.href = `/users/${post.userid}`
             })
             postInfoElement.appendChild(postUsernameElement)
 
-            if(postUser.verified == 1){
+            if (postUser.verified == 1) {
                 let postVerifiedTickElement = document.createElement("img")
                 postVerifiedTickElement.src = '/assets/verified.png'
                 postVerifiedTickElement.classList.add("feedPostVerifiedTick")
@@ -145,6 +210,43 @@ class Feed {
             postCreatedElement.classList.add("feedPostCreated")
             postInfoElement.appendChild(postCreatedElement)
 
+            if (post.actions != undefined && post.actions.length > 0) {
+                let postOptions = document.createElement("img")
+                postOptions.classList.add("feedPostOptions")
+                postOptions.addEventListener("click", ev => {
+                    let cx = new ContextMenu(ev.clientX, ev.clientY)
+                    post.actions.forEach(action=>{
+                        switch(action){
+                            case "delete":
+                                cx.add(
+                                    "Delete", 
+                                    async () => { 
+                                        let res = (await ajax({
+                                            "url":`/api/posts/delete/${post.id}`,
+                                            "type":"GET"
+                                        }));
+                                        console.log(res)
+                                        if(res == undefined || res.type == 'error'){
+                                            notification("Something went wrong. Please try again later", 5000)
+                                            return
+                                        }
+                                        postElement.remove()
+                                        notification("Post deleted", 3000)
+                                    },
+                                    "/assets/delete.png"
+                                )
+                                break
+                        }
+                    })
+                    
+                    cx.show()
+                })
+                postOptions.src = "/assets/menumono.png"
+                postInfoElement.appendChild(postOptions)
+            }
+
+
+
             let postContent = document.createElement("textarea")
             postContent.innerHTML = post.content
             postContent.classList.add('feedPostContent')
@@ -152,7 +254,7 @@ class Feed {
             postContent.readOnly = true
             postElement.appendChild(postContent)
 
-            if(post.restrictions.length > 0){
+            if (post.restrictions.length > 0) {
                 let nohide = undefined;
 
                 postContent.classList.add("hidden")
@@ -181,7 +283,7 @@ class Feed {
 
                 let postRestrictionShow = document.createElement("button")
                 postRestrictionShow.innerHTML = "Show Content"
-                postRestrictionShow.onclick = ()=>{
+                postRestrictionShow.onclick = () => {
                     postRestrictionContainer.classList.add("hidden")
                     postContent.classList.remove("hidden")
                 }
@@ -189,13 +291,13 @@ class Feed {
                 postRestrictionShow.classList.add("button")
                 postRestrictionContainer.appendChild(postRestrictionShow)
 
-                for(let restriction of post.restrictions){
-                    if(restriction.hidecontent == 1){
+                for (let restriction of post.restrictions) {
+                    if (restriction.hidecontent == 1) {
                         postRestrictionContent.innerHTML = restriction.reason;
                         postRestrictionShow.remove()
                         break
                     } else {
-                        if(nohide == undefined){
+                        if (nohide == undefined) {
                             nohide = restriction
                             postRestrictionContent.innerHTML = restriction.reason
                         }
@@ -210,10 +312,10 @@ class Feed {
     }
 }
 
-async function main(){
-    me = (await ajax({"url":"/api/users/me","method":"GET"})).data
+async function main() {
+    me = (await ajax({ "url": "/api/users/me", "method": "GET" })).data
 
-    if(me != null){
+    if (me != null) {
         document.getElementById("profileDetails").classList.remove("hidden")
         document.getElementById("signin").classList.add("hidden")
         document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)
@@ -222,10 +324,10 @@ async function main(){
 
     try {
         app()
-    } catch(err){
+    } catch (err) {
         console.log("No App")
     }
-    
+
 }
 
 main()

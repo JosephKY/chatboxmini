@@ -519,4 +519,6 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
     }
 }
 
+
+
 module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword }

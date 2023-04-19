@@ -30,6 +30,10 @@ router.get("/feed/:type", async (req, res)=>{
     returnMessageService(await postsController.feed(req.params.type, req, req.query), res)
 })
 
+router.get("/delete/:id", async(req, res)=>{
+    returnMessageService(await postsController.deletePost(req.params.id, req), res)
+})
+
 router.get("/:id", async (req, res)=>{
     let p = (await postsController.get(req.params.id, req.socket.remoteAddress))
     console.log(p)
