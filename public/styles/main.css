@@ -26,7 +26,7 @@ body {
 }
 
 #app {
-    width: var(--app-width);
+    max-width: var(--app-width);
     margin: 10px auto;
     min-height: calc(100vh - 20px);
 }
@@ -49,6 +49,7 @@ body {
 
 #header {
     display: flex;
+    padding: 0 10px;
 }
 
 #profile {
@@ -193,8 +194,9 @@ body {
 }
 
 .feedContainer {
-    width: 600px;
+    max-width: 600px;
     overflow-y: auto;
+    width: 100vw;
   }
 
 .feedPost {
@@ -341,4 +343,33 @@ input:focus {
     height: 22px;
     margin-right: 3px;
     opacity: 0.8;
+  }
+
+
+  #settingsContainer {
+    min-width: 250px;
+    height: inherit;
+    border-right: 1px solid #AAA;
+  }
+  .settingsElement {
+    box-sizing: border-box;
+    padding: 10px;
+    border-bottom: 1px solid #AAA;
+  }
+  #settingsMaster {
+    border: 1px solid #AAA;
+    min-height: 300px;
+    display: flex;
+  }
+  .settingsElement:hover {
+    cursor: pointer;
+    background: #FAFAFA;
+  }
+
+  #settingsPage {
+    width: 100%;
+  }
+
+  .settingsElement span {
+    user-select: none;
   }
