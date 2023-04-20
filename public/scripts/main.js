@@ -108,7 +108,7 @@ class ContextMenu {
         return this
     }
 
-    add(name, onclick, icon="/assets/action.png", selfDestruct = true) {
+    add(name, onclick, icon = "/assets/action.png", selfDestruct = true) {
         let itemElement = document.createElement("div")
         itemElement.classList.add("contextMenuItem")
         itemElement.addEventListener("click", () => {
@@ -145,15 +145,15 @@ class Feed {
         this.onEndScroll = onEndScroll
         this.lastPostId = 0;
 
-        this.container.addEventListener("scroll", () => {
-            if (this.container.scrollTop == (this.container.scrollHeight - this.container.clientHeight)) {
+        document.body.onscroll = () => {
+            if (window.scrollY >= (window.scrollMaxY - 50)) {
                 try {
                     this.onEndScroll()
                 } catch (err) {
 
                 }
             }
-        })
+        }
 
         this.type = type
     }
@@ -176,12 +176,16 @@ class Feed {
         this.lastPostId = posts[posts.length - 1].id
 
         posts.forEach(async post => {
-            if(post.deleted == 1){
+            if (post.deleted == 1) {
+                console.log("DELETED")
                 return
             }
 
             let postUser = (await getUser(post.userid));
-            if (!postUser) return;
+            if (!postUser) {
+                console.log("NO USER")
+                return;
+            }
 
             let postElement = document.createElement("div")
             postElement.classList.add("feedPost")
@@ -215,18 +219,18 @@ class Feed {
                 postOptions.classList.add("feedPostOptions")
                 postOptions.addEventListener("click", ev => {
                     let cx = new ContextMenu(ev.clientX, ev.clientY)
-                    post.actions.forEach(action=>{
-                        switch(action){
+                    post.actions.forEach(action => {
+                        switch (action) {
                             case "delete":
                                 cx.add(
-                                    "Delete", 
-                                    async () => { 
+                                    "Delete",
+                                    async () => {
                                         let res = (await ajax({
-                                            "url":`/api/posts/delete/${post.id}`,
-                                            "type":"GET"
+                                            "url": `/api/posts/delete/${post.id}`,
+                                            "type": "GET"
                                         }));
                                         console.log(res)
-                                        if(res == undefined || res.type == 'error'){
+                                        if (res == undefined || res.type == 'error') {
                                             notification("Something went wrong. Please try again later", 5000)
                                             return
                                         }
@@ -238,7 +242,7 @@ class Feed {
                                 break
                         }
                     })
-                    
+
                     cx.show()
                 })
                 postOptions.src = "/assets/menumono.png"
@@ -247,12 +251,59 @@ class Feed {
 
 
 
+            /*
             let postContent = document.createElement("textarea")
             postContent.innerHTML = post.content
             postContent.classList.add('feedPostContent')
             postContent.style.height = `calc(${postContent.scrollHeight}px + 1.2em)`
             postContent.readOnly = true
             postElement.appendChild(postContent)
+            */
+
+            class TextFormat{
+                constructor(token, htmlElementName)
+            }
+
+            function formatText(text) {
+                for(let [front, back] of Object.entries(format)){
+                    text = text.replace(`[${front}]`, `<${back}>`);
+                    text = text.replace(`[/${front}]`, `</${back}>`);
+                }
+                return text;
+            }
+
+            let postContent = document.createElement("div")
+            postContent.classList.add('feedPostContent')
+            let content = String(post.content)
+            let lines = (content.split(/\r?\n|\r|\n/g));
+            for (let lineIndex in lines) {
+                let line = lines[lineIndex]
+                let splt = line.split(" ")
+                for (let wordIndex in splt) { // Implementation
+                    let word = splt[wordIndex]
+                    console.log(word)
+                    if (!word) continue
+
+                    word = formatText(word)
+
+                    let wordElement = document.createElement("span")
+                    wordElement.innerHTML = word
+                    postContent.appendChild(wordElement)
+                    if (wordIndex != (splt.length - 1)) {
+                        let spaceElement = document.createElement("span")
+                        spaceElement.innerHTML = " "
+                        postContent.appendChild(spaceElement)
+                    }
+                }
+                if (lineIndex != (lines.length - 1)) {
+                    let breakElement = document.createElement("br")
+                    postContent.appendChild(breakElement)
+                }
+            }
+
+
+            postElement.appendChild(postContent)
+
 
             if (post.restrictions.length > 0) {
                 let nohide = undefined;
@@ -304,6 +355,7 @@ class Feed {
                     }
                 }
             }
+
 
             this.container.appendChild(postElement)
         })
