@@ -76,6 +76,10 @@ app.get("/resetpassword", async (req, res)=>{
     renderPage(req, res, "resetpassword")
 })
 
+app.get("/settings", async (req, res) => {
+    renderPage(req, res, "settings")
+})
+
 app.get("/users/:id", async (req, res) => {
     renderPage(req, res, "user")
 })

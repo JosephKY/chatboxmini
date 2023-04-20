@@ -260,40 +260,56 @@ class Feed {
             postElement.appendChild(postContent)
             */
 
-            class TextFormat{
-                constructor(token, htmlElementName)
-            }
+            class TextFormat {
+                constructor(token, htmlElementName) {
 
-            function formatText(text) {
-                for(let [front, back] of Object.entries(format)){
-                    text = text.replace(`[${front}]`, `<${back}>`);
-                    text = text.replace(`[/${front}]`, `</${back}>`);
                 }
-                return text;
             }
 
             let postContent = document.createElement("div")
             postContent.classList.add('feedPostContent')
             let content = String(post.content)
             let lines = (content.split(/\r?\n|\r|\n/g));
+            //let boldActivated = false;
             for (let lineIndex in lines) {
                 let line = lines[lineIndex]
                 let splt = line.split(" ")
                 for (let wordIndex in splt) { // Implementation
                     let word = splt[wordIndex]
-                    console.log(word)
                     if (!word) continue
 
-                    word = formatText(word)
+                    /*
+                    let formatSplit = word.split("[b]")
+                    if(formatSplit.length > 1){
+                        let special = formatSplit[0]
+                        if(!special != true){
+                            let specialElement = document.createElement("span")
+                            specialElement.innerHTML = special
+                            postContent.appendChild(specialElement)
+                        }
+                        
+                        boldActivated = true
+                    }
+
+                    let deformatSplit = word.split("[/b]")
+                    if(deformatSplit.length > 1){
+                        boldActivated = false
+                    }*/
 
                     let wordElement = document.createElement("span")
-                    wordElement.innerHTML = word
+                    wordElement.innerHTML = `${word}`
                     postContent.appendChild(wordElement)
                     if (wordIndex != (splt.length - 1)) {
                         let spaceElement = document.createElement("span")
                         spaceElement.innerHTML = " "
                         postContent.appendChild(spaceElement)
                     }
+
+                    /*
+                    if(boldActivated){
+                        wordElement.innerHTML = `<b>${word}</b>`
+                    }
+                    */
                 }
                 if (lineIndex != (lines.length - 1)) {
                     let breakElement = document.createElement("br")
@@ -363,6 +379,148 @@ class Feed {
         this.noload = false;
     }
 }
+
+class ViewPage {
+    constructor(source, container) {
+        this.source = source;
+        this.sourceContent = false;
+        this.container = container
+    }
+
+    async load() {
+        if (this.sourceContent == false) {
+            console.log('loading')
+            let content = await ajax({
+                "url": this.source,
+                "type": "GET"
+            })
+            console.log(content)
+            this.sourceContent = content;
+        }
+
+        console.log(this.sourceContent)
+        this.container.innerHTML = this.sourceContent;
+
+    }
+}
+
+class ViewCategory {
+    constructor(name, item) {
+        this.name = name
+        this.item = item
+        return this;
+    }
+
+    onclick(method){
+        this.onclick = method
+        return this;
+    }
+
+    run(){
+        if(this.onclick != undefined){
+            this.onclick()
+        }
+    }
+}
+
+class ViewDirectory {
+    constructor() {
+        this.categories = [];
+        return this;
+    }
+
+    addCategory(category) {
+        this.categories.push(category);
+        return this;
+    }
+}
+
+class Views {
+    constructor(masterElement, masterDirectory) {
+        this.master = masterElement
+        this.directories = [masterDirectory]
+        this.currentDirectory = masterDirectory;
+        this.masterDirectory = masterDirectory;
+
+        this.render()
+    }
+
+    render() {
+        while (this.master.firstChild) {
+            this.master.removeChild(this.master.firstChild)
+        }
+
+        console.log(this.directories)
+        if(this.directories.length > 1){
+            let backElement = document.createElement("div")
+            backElement.classList.add("settingsElement")
+
+            let backElementName = document.createElement("span")
+            backElementName.innerHTML = "Back"
+            backElement.appendChild(backElementName)
+
+            backElement.addEventListener("click", ()=>{
+                this.directories.pop()
+                this.currentDirectory = this.directories[this.directories.length - 1]
+                this.render()
+            })
+
+            this.master.appendChild(backElement)
+        }
+
+        this.currentDirectory.categories.forEach(category => {
+            let categoryElement = document.createElement("div")
+            categoryElement.classList.add("settingsElement")
+
+            let categoryElementName = document.createElement("span")
+            categoryElementName.innerHTML = category.name
+            categoryElement.appendChild(categoryElementName)
+
+            categoryElement.addEventListener("click", () => {
+                switch (category.item.constructor.name) {
+                    case "ViewPage":
+                        category.item.load()
+                        break
+                    case "ViewDirectory":
+                        this.directories.push(category.item)
+                        this.currentDirectory = category.item;
+                        this.render()
+                        break
+                }
+
+                category.run()
+            })
+
+            this.master.appendChild(categoryElement)
+        })
+
+
+    }
+}
+
+let mainContainer = document.getElementById("settingsContainer")
+let mainPage = document.getElementById("settingsPage")
+
+let homeDirectory = new ViewDirectory()
+    .addCategory(
+        new ViewCategory(
+            "My Account",
+            new ViewDirectory()
+            .addCategory(
+                new ViewCategory(
+                    "Change Username",
+                    new ViewPage("/", mainPage)
+                )
+            )
+        )
+
+    )
+
+let settingsViews = new Views(
+    mainContainer,
+    homeDirectory
+)
+
 
 async function main() {
     me = (await ajax({ "url": "/api/users/me", "method": "GET" })).data
