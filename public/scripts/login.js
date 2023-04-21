@@ -20,24 +20,6 @@ let userConfig = {
     maxPasswordLength: 128
 };
 
-function isEmpty(el){
-    if(!el.value.trim())return true;
-    return false
-}
-
-function usernameValidate(username){
-    var regex = /^[a-zA-Z0-9]+$/;
-    return regex.test(username);
-}
-
-function valEmail(email) {
-    return String(email)
-        .toLowerCase()
-        .match(
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
-}
-
 function evalLogin(){
     if(
         isEmpty(loginUsernameOrEmail) ||
@@ -186,9 +168,10 @@ signupUsername.oninput = (inp=>{
     lastSignupUsernameInput = now
     let username = signupUsername.value
 
-
+    signupUsernameFlair.innerHTML = ""
 
     setTimeout(async ()=>{
+        
         if(lastSignupUsernameInput != now)return
         let check = (await ajax({
             "url":"/api/users/usernameTaken",

@@ -10,6 +10,7 @@ const htmlED = require("html-encoder-decoder")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model");
+const { delCache } = require("../services/cache.service");
 
 async function create(username, password, email, dob, req, response){
     username = String(username);
@@ -105,6 +106,8 @@ async function get(userid, req){
         isSelf = true;
     }
 
+    
+
     let userData = (await userService.get(userid))
     if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
         return userData;
@@ -190,4 +193,22 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
     return (await userService.resetPassword(tokenOrCurrentPassword, newPassword, req));
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword }
+async function changeUsername(newUsername, req){
+    let login = (jwtService.isLoggedIn(req));
+    if(login == false)return new ReturnMessage("2002", "Login required", 400, 'error')
+
+    let taken = (await usernameTaken(newUsername))
+    if(taken.data !== false){
+        console.log(taken)
+        return new ReturnMessage("2003", "Username is taken or invalid", 400, 'error')
+    }
+
+    let change = (await userService.changeUsername(login.sub, htmlED.encode(newUsername)))
+    if(change !== true){
+        return change;
+    }
+
+    return new ReturnMessage("2005", "Username changed successfully", 200, 'usernameChange')
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword, changeUsername }

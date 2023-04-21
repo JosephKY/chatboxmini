@@ -3,7 +3,7 @@ let profileHeader = document.getElementById("profileHeader")
 
 
 async function app(){
-    let userid = window.location.pathname.split("/")[2]
+    let userid = window.location.pathname.split("/")[1]
     let user = (await getUser(userid))
 
     if(!user){
@@ -32,13 +32,13 @@ async function app(){
     let userFeed = new Feed(document.getElementById("userContent"), "user")
     userFeed.load({
         "max":15,
-        "userid":userid
+        "userid":user.id
     })
 
     userFeed.onEndScroll = ()=>{
         userFeed.load({
             "max":15,
-            "userid":userid,
+            "userid":user.id,
             "startingId":userFeed.lastPostId
         })
     }
