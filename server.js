@@ -85,6 +85,10 @@ app.get("/settings", async (req, res) => {
     renderPage(req, res, "settings")
 })
 
+app.get("/verify", async (req, res) => {
+    renderPage(req, res, "verify")
+})
+
 userConfig.settings.forEach(setting=>{
     app.get(`/setting/${setting}`, async(req, res)=>{
         renderPage(req, res, `settings/${setting}`, true)
