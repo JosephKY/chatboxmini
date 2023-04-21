@@ -3,6 +3,8 @@ let lastNotifCall = 0
 
 let cache = {}
 
+let green = "rgb(57, 155, 91)"
+
 function setCache(title, key, object) {
     if (cache[title] == undefined) {
         cache[title] = {}
@@ -198,7 +200,7 @@ class Feed {
             postUsernameElement.innerHTML = postUser.username;
             postUsernameElement.classList.add("feedPostUsername")
             postUsernameElement.addEventListener("click", () => {
-                window.location.href = `/users/${post.userid}`
+                window.location.href = `/users/${postUser.username}`
             })
             postInfoElement.appendChild(postUsernameElement)
 
@@ -405,19 +407,20 @@ class ViewPage {
 }
 
 class ViewCategory {
-    constructor(name, item) {
+    constructor(name, item, icon = undefined) {
         this.name = name
         this.item = item
+        this.icon = icon
         return this;
     }
 
-    onclick(method){
+    onclick(method) {
         this.onclick = method
         return this;
     }
 
-    run(){
-        if(this.onclick != undefined){
+    run() {
+        if (this.onclick != undefined) {
             this.onclick()
         }
     }
@@ -451,15 +454,19 @@ class Views {
         }
 
         console.log(this.directories)
-        if(this.directories.length > 1){
+        if (this.directories.length > 1) {
             let backElement = document.createElement("div")
             backElement.classList.add("settingsElement")
 
+            let backElementIcon = document.createElement("img")
+            backElementIcon.src = "/assets/back.png"
+            backElement.appendChild(backElementIcon)
+
             let backElementName = document.createElement("span")
-            backElementName.innerHTML = "Back"
+            backElementName.innerHTML = "<b>Back</b>"
             backElement.appendChild(backElementName)
 
-            backElement.addEventListener("click", ()=>{
+            backElement.addEventListener("click", () => {
                 this.directories.pop()
                 this.currentDirectory = this.directories[this.directories.length - 1]
                 this.render()
@@ -472,20 +479,28 @@ class Views {
             let categoryElement = document.createElement("div")
             categoryElement.classList.add("settingsElement")
 
+            if (category.icon != undefined) {
+                let categoryElementIcon = document.createElement("img")
+                categoryElementIcon.src = category.icon
+                categoryElement.appendChild(categoryElementIcon)
+            }
+
             let categoryElementName = document.createElement("span")
             categoryElementName.innerHTML = category.name
             categoryElement.appendChild(categoryElementName)
 
             categoryElement.addEventListener("click", () => {
-                switch (category.item.constructor.name) {
-                    case "ViewPage":
-                        category.item.load()
-                        break
-                    case "ViewDirectory":
-                        this.directories.push(category.item)
-                        this.currentDirectory = category.item;
-                        this.render()
-                        break
+                if (category.item != undefined && category.item.constructor != undefined) {
+                    switch (category.item.constructor.name) {
+                        case "ViewPage":
+                            category.item.load()
+                            break
+                        case "ViewDirectory":
+                            this.directories.push(category.item)
+                            this.currentDirectory = category.item;
+                            this.render()
+                            break
+                    }
                 }
 
                 category.run()
@@ -498,28 +513,54 @@ class Views {
     }
 }
 
-let mainContainer = document.getElementById("settingsContainer")
-let mainPage = document.getElementById("settingsPage")
+function isEmpty(el){
+    if(!el.value.trim())return true;
+    return false
+}
 
-let homeDirectory = new ViewDirectory()
-    .addCategory(
-        new ViewCategory(
-            "My Account",
-            new ViewDirectory()
-            .addCategory(
-                new ViewCategory(
-                    "Change Username",
-                    new ViewPage("/", mainPage)
-                )
-            )
-        )
+async function usernameValidate(username) {
+    username = String(username)
+    // Check if the string only contains alphanumeric characters
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+        return false;
+    }
 
-    )
+    // Check if the string contains at least one alphabetical character
+    if (!/[a-zA-Z]/.test(username)) {
+        return false;
+    }
 
-let settingsViews = new Views(
-    mainContainer,
-    homeDirectory
-)
+    // Check if the string has no spaces or special characters
+    if (/\W|_/.test(username)) {
+        return false;
+    }
+
+    return true;
+}
+
+function valEmail(email) {
+    return String(email)
+        .toLowerCase()
+        .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        );
+}
+
+function valPass(pass, verify){
+    if(pass.length < 8){
+        return -1;
+    }
+
+    if(pass.length > 128){
+        return -2;
+    }
+
+    if(pass != verify){
+        return -3
+    }
+
+    return true
+}
 
 
 async function main() {
@@ -529,7 +570,7 @@ async function main() {
         document.getElementById("profileDetails").classList.remove("hidden")
         document.getElementById("signin").classList.add("hidden")
         document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)
-        document.getElementById("myprofileLink").href = `/users/${me.id}`
+        document.getElementById("myprofileLink").href = `/${me.username}`
     }
 
     try {

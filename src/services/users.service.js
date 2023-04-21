@@ -2,6 +2,7 @@
 const jwtConfig = require("../configs/jwt.config")
 const fs = require("fs")
 const emailConfig = require("../configs/email.config")
+const userConfig = require("../configs/user.config")
 
 // Modules
 const ReturnMessage = require("../models/returnMessage.model")
@@ -23,11 +24,55 @@ let resetPasswordEmail = fs.readFileSync("views/resetPasswordEmail.ejs").toStrin
 resetPasswordEmail = resetPasswordEmail.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
 
 async function usernameValidate(username) {
-    var regex = /^[a-zA-Z0-9]+$/;
-    return regex.test(username);
+    username = String(username)
+    // Check if the string only contains alphanumeric characters
+    if (!/^[a-zA-Z0-9]+$/.test(username)) {
+        return false;
+    }
+
+    // Check if the string contains at least one alphabetical character
+    if (!/[a-zA-Z]/.test(username)) {
+        return false;
+    }
+
+    // Check if the string has no spaces or special characters
+    if (/\W|_/.test(username)) {
+        return false;
+    }
+
+    if(userConfig.reservedUsernames.includes(username.toLowerCase())){
+        return false;
+    }
+
+    return true;
+}
+
+async function changeUsername(userid, newUsername){
+    newUsername = String(newUsername);
+
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("2000", "General Failure", 500, "error")
+    }
+
+    let sql = "UPDATE users SET username = ? WHERE id LIKE ?";
+    let inserts = [newUsername, userid]
+    try {
+        (await db.execute(sql, inserts))
+        cacheService.delCache("user", userid)
+        return true
+    } catch(err){
+        console.log(err)
+        return new ReturnMessage("2001", "General Failure", 500, "error")
+    }
 }
 
 async function get(userid) {
+    let idFromUsername = (await getIdByUsername(userid))
+    if (idFromUsername.constructor == undefined || idFromUsername.constructor.name != "ReturnMessage") {
+        userid = idFromUsername
+    }
+
     let cache = cacheService.getCache("user", userid)
     if (cache != false) {
         return cache;
@@ -374,10 +419,10 @@ async function sendResetEmail(usernameOrEmail) {
     try {
         let res = (await db.execute(sql, inserts));
         res = res[0]
-        if (res == undefined || res.length == 0){
+        if (res == undefined || res.length == 0) {
             console.log("no content")
             return;
-        } 
+        }
 
         let emailAccount = emailConfig.accounts["no-reply@youcc.xyz"]
 
@@ -405,7 +450,7 @@ async function sendResetEmail(usernameOrEmail) {
         inserts = [created, expires, token, userid]
         try {
             (await db.execute(sql, inserts))
-        } catch(err){
+        } catch (err) {
             console.log(err)
             return
         }
@@ -439,7 +484,7 @@ async function sendResetEmail(usernameOrEmail) {
     }
 }
 
-async function setPassword(userid, newPassword){
+async function setPassword(userid, newPassword) {
     let db = await dbService.newdb()
     if (!db) {
         return new ReturnMessage("1711", "General Failure", 500, "error");
@@ -452,13 +497,13 @@ async function setPassword(userid, newPassword){
     try {
         (await db.execute(sql, inserts))
         return true;
-    } catch(err){
+    } catch (err) {
         console.log(err)
         return new ReturnMessage("1712", "General Failure", 500, "error");
     }
 }
 
-async function resetPassword(tokenOrCurrentPassword, newPassword, req){
+async function resetPassword(tokenOrCurrentPassword, newPassword, req) {
     let login = jwtService.isLoggedIn(req)
 
     let db = await dbService.newdb()
@@ -466,14 +511,15 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
         return new ReturnMessage("1704", "General Failure", 500, "error");
     }
 
-    if(login != false){
+    if (login != false) {
         let userData = (await get(login.sub))
         if (userData.constructor != undefined && userData.constructor.name == "ReturnMessage") {
             return userData;
         }
-        if(verifyPass(userData.password, tokenOrCurrentPassword) == false)return new ReturnMessage("1706", "Bad Password", 400, 'error')
+        if ((await verifyPass(userData.pass, tokenOrCurrentPassword)) == false) return new ReturnMessage("1706", "Bad Password", 400, 'error')
         let setPass = (await setPassword(userData.id, newPassword))
-        if(setPass !== true)return setPass;
+        if (setPass !== true) return setPass;
+        cacheService.delCache("user", login.sub)
         return new ReturnMessage("1707", "Password reset successfully", 200, 'resetPassword')
     }
 
@@ -484,12 +530,12 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
         let tokenResults = (await db.execute(sql, inserts));
         tokenResults = tokenResults[0]
 
-        if(tokenResults.length == 0){
+        if (tokenResults.length == 0) {
             return new ReturnMessage("1708", "Bad token", 400, 'error')
-        } 
+        }
 
         let tokenData = tokenResults[0]
-        if(tokenData.expires < Math.floor(Date.now() / 1000)){
+        if (tokenData.expires < Math.floor(Date.now() / 1000)) {
             return new ReturnMessage("1709", "Expired token", 400, 'error')
         }
 
@@ -499,7 +545,7 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
         }
 
         let set = (await setPassword(tokenData.userid, newPassword))
-        if(set !== true)return set;
+        if (set !== true) return set;
 
         let newExp = Math.floor(Date.now() / 1000)
         let tokenId = tokenData.id
@@ -507,13 +553,13 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
         inserts = [newExp, tokenId];
         try {
             (await db.execute(sql, inserts))
-        } catch(err){
+        } catch (err) {
             console.log(err)
         }
 
         return new ReturnMessage("1710", "Password reset through token successfully", 200, 'resetPassword')
 
-    } catch(err){
+    } catch (err) {
         console.log(err)
         return new ReturnMessage("1705", "General Failure", 500, "error");
     }
@@ -521,4 +567,4 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req){
 
 
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword }
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername }

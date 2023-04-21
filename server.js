@@ -13,6 +13,7 @@ const apiRoute = require("./src/routes/api.route")
 // Configs
 const restrictionsConfig = require("./src/configs/restrictions.config")
 const postConfig = require("./src/configs/post.config")
+const userConfig = require("./src/configs/user.config")
 
 // Work
 for (let name in restrictionsConfig) {
@@ -40,14 +41,18 @@ app.use(express.static('public', {
 
 app.use("/api", apiRoute)
 
-function renderPage(req, res, page) {
+function renderPage(req, res, page, noindex=false) {
     try {
         const localeData = localeService.getLocale(req, res);
         const replicated = {
             locale: localeData,
             page: page,
         };
-        res.render("index", replicated);
+        if(!noindex){
+            res.render("index", replicated);
+        } else {
+            res.render(page, replicated)
+        }
     } catch (error) {
         // Handle any errors that might occur
         res.status(500).send("Internal Server Error")
@@ -80,7 +85,13 @@ app.get("/settings", async (req, res) => {
     renderPage(req, res, "settings")
 })
 
-app.get("/users/:id", async (req, res) => {
+userConfig.settings.forEach(setting=>{
+    app.get(`/setting/${setting}`, async(req, res)=>{
+        renderPage(req, res, `settings/${setting}`, true)
+    })
+})
+
+app.get("/:username", async (req, res) => {
     renderPage(req, res, "user")
 })
 
