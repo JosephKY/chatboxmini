@@ -89,6 +89,16 @@ router.patch("/changeUsername", urlencodedparser, async (req, res)=>{
 
 })
 
+router.patch("/changeEmail", urlencodedparser, async (req, res)=>{
+    let paramsReq = arrReq.req(req.body, ["email"]);
+    if(paramsReq != true){
+        returnMessageService(new ReturnMessage("2305", `Missing parameter: ${paramsReq}`, 400, "error"), res);
+        return;
+    }
+    returnMessageService((await userController.changeEmail(req.body.email, req)), res)
+
+})
+
 router.get("/:id", async (req, res) =>{ 
     let ra = req.socket.remoteAddress
     //if(restrictionsService.isCapacity("userGet", ra, res))return

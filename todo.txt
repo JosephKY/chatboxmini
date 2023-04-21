@@ -1,20 +1,20 @@
 o Change Username option
-- Change Password option
+o Change Password option
 - Change/Verify Email Option
-- Delete Account option
-- New post menu
-- All Posts feed
+- Delete Account option 2
+- New post menu 7
+- All Posts feed 4
 
-- Report posts functionality
-- Report users functionality
-- Admin reports view
-- Admin user moderation
-- Admin post moderation
+- Report posts functionality 1
+- Report users functionality 3
+- Admin reports view 1
+- Admin user moderation 1
+- Admin post moderation 1
 
-- Rate limit all endpoints
-- Terms of service
-- Privacy Policy
-- Community guidelines
+- Rate limit all endpoints 4
+- Terms of service 6
+- Privacy Policy 5
+- Community guidelines 8
 
-- Language Option
-- Localization 
+- Language Option 4
+- Localization 5

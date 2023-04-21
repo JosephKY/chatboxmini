@@ -211,4 +211,29 @@ async function changeUsername(newUsername, req){
     return new ReturnMessage("2005", "Username changed successfully", 200, 'usernameChange')
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword, changeUsername }
+async function changeEmail(newEmail, req){
+    let login = (jwtService.isLoggedIn(req));
+    if(login == false)return new ReturnMessage("2300", "Login required", 400, 'error')
+    if(!userService.valEmail(newEmail))return new ReturnMessage("2301", "Email is invalid", 400, 'error')
+
+    let ex = (await userService.getIdByEmail(newEmail))
+    if(ex.constructor != undefined && ex.constructor.name == 'ReturnMessage'){
+        if(ex.code == "302"){
+            let change = (await userService.changeEmail(newEmail, login.sub))
+            if(change !== true){
+                return change
+            }
+            return new ReturnMessage("2304", "Email changed successfully", 200, 'error')
+        } else {
+            return ex;
+        }
+    } else {
+        if(login.sub == ex){
+            return new ReturnMessage("2303", "Email is already associated with your account", 400, 'error')
+        }
+        return new ReturnMessage("2302", "Email is already associated with another account", 400, 'error')
+    }
+    
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword, changeUsername, changeEmail }
