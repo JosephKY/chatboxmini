@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <html>
+    <script>
+        let locale = <%-JSON.stringify(locale)%>;
+    </script>
     <script src="/scripts/jquery.js"></script>
     <head>
         <title>Feed</title>
         <link rel="stylesheet" href="/styles/main.css"/>
     </head>
-    <body>
+    <body class="">
+        <div id="disabledOverlay"></div>
         <p id="notification"></p>
+        <div id="composeContainer" class="hidden">
+            <%-include ('compose.ejs')%>
+        </div>
         <div id="app">
             <%-include ('header.ejs')%>
             <%-include (`${page}.ejs`)%> 
