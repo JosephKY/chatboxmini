@@ -1,0 +1,10 @@
+<h1>Change Email</h1>
+<input placeholder="Current Password" type="password" id="settingsCurrentPasswordField"/><br>
+<input oninput="settingsNewEmailField()" type="email" placeholder="New Email" id="settingsNewEmailField"/><br>
+<button class="button" id="settingsNewEmailSubmit" onclick="settingsNewEmailSubmit()" disabled>Submit</button>
+
+<br>
+
+<h1>Email Verification</h1>
+<p id="settingsEmailVerifyStatus"></p>
+<button class="button hidden" id="settingsSendEmailVerify" onclick="settingsSendEmailVerify()">Send Verification Email</button>

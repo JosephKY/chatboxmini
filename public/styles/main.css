@@ -101,15 +101,18 @@ body {
   padding: .5em 1em;
 }
 
+.button.danger {
+  background: linear-gradient(#FF5056, #E22228) !important;
+  border: 1px solid #E22228 !important;
+}
+
 .button:hover {
   cursor: pointer;
   filter: brightness(0.9)
 }
 
 .button[disabled] {
-  background: linear-gradient(#AAB2CC, #91A5E1) !important;
-  border-color: #91A5E1 !important;
-  color: #E8E8E8 !important;
+  opacity: 0.4;
 }
 
 .button[disabled]:hover {
@@ -381,7 +384,7 @@ input:focus {
 
 .settingsElement:hover {
   cursor: pointer;
-  background: #f7f7f7;
+  background: #d9d9d9;
 }
 
 .settingsElement:first-child:hover {
@@ -404,8 +407,20 @@ input:focus {
   margin-bottom: 5px;
 }
 
-#settingsPage h1 {
+#settingsPage h1:first-child {
   margin-top: 0;
+}
+
+#settingsPage h1:not(:first-child) {
+  margin-top: 50px;
+}
+
+#settingsPage .pageLoading {
+  margin: auto;
+  display: block;
+  height: 100%;
+  object-fit: none;
+  width: inherit;
 }
 
 .settingsElement span {

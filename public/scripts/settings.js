@@ -26,7 +26,20 @@ function app() {
                     .addCategory(
                         new ViewCategory(
                             "Email",
-                            new ViewPage("/", mainPage),
+                            new ViewPage("/setting/email", mainPage)
+                            .onload(()=>{
+                                let strVal = {
+                                    0: "not verified",
+                                    1: "verified"
+                                }
+                                document.getElementById("settingsEmailVerifyStatus").innerHTML = `${me.email} is <b>${strVal[me.emailverified]}</b>`
+                                
+                                if(me.emailverified == 0){
+                                    document.getElementById("settingsSendEmailVerify").classList.remove("hidden")
+                                }
+                            
+                            })
+                            ,
                             "/assets/mail.png"
                         )
                     )
@@ -164,6 +177,7 @@ async function settingsNewUsernameSubmit(){
 
     notification("Username changed successfully!", 5000, green)
     document.getElementById("myprofileLink").innerHTML = usernameInput.value
+    me.username = usernameInput.value
     usernameInput.value = ""
 }
 

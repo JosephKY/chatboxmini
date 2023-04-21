@@ -5,7 +5,8 @@ let userConfig = {
     maxPasswordLength: 128,
     settings:[
         "changeUsername",
-        "changePassword"
+        "changePassword",
+        "email"
     ],
     reservedUsernames:[
         "home",

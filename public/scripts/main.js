@@ -390,6 +390,12 @@ class ViewPage {
     }
 
     async load() {
+        this.container.innerHTML = ""
+        let loadingAjax = document.createElement("img")
+        loadingAjax.src = "/assets/loading.gif"
+        loadingAjax.classList = "pageLoading"
+        this.container.appendChild(loadingAjax)
+
         if (this.sourceContent == false) {
             console.log('loading')
             let content = await ajax({
@@ -400,9 +406,15 @@ class ViewPage {
             this.sourceContent = content;
         }
 
-        console.log(this.sourceContent)
+        loadingAjax.remove()
         this.container.innerHTML = this.sourceContent;
 
+        if(this.onpageload != undefined)this.onpageload()
+    }
+
+    onload(method){
+        this.onpageload = method
+        return this
     }
 }
 

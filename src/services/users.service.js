@@ -565,6 +565,45 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req) {
     }
 }
 
+async function changeEmail(newEmail, id){
+    return updateUser(["email", "emailverified"], [String(newEmail), 0], id)
+}
 
+async function updateUser(columns=[], values=[], id){
+    if(columns.length != values.length || columns.length == undefined || columns.length == 0)return new ReturnMessage("2202", "General Failure", 500, "error");
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername }
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("2200", "General Failure", 500, "error");
+    }
+
+    let sql = "UPDATE users SET "
+    let inserts = []
+
+    for(let columnIndex in columns){
+        let columnName = columns[columnIndex]
+        let isLast = columnIndex == (columns.length - 1)
+
+        let val = values[columnIndex]
+        inserts.push(columnName)
+        inserts.push(val)
+
+        sql = sql + `?? = ?`
+        if(!isLast)sql = sql + ", "
+    }
+
+    sql = sql + " WHERE id LIKE ?"
+    inserts.push(id)
+
+    console.log(sql, inserts)
+    try {
+        (await db.execute(sql, inserts))
+        cacheService.delCache("user", id)
+        return true
+    } catch(err){
+        console.log(err, sql, inserts)
+        return new ReturnMessage("2201", "General Failure", 500, "error");
+    }
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser }
