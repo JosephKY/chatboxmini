@@ -1,0 +1,17 @@
+<h1>Delete Account</h1>
+<p>Deleting your account will erase all of your data from Feed. This includes (but is not limited to) your user details and posts.</p>
+<p>Before deleting your account, you should understand the following things:</p>
+<ol>
+    <li>Deleting your account will take effect immediately and instantly sign you out</li>
+    <li>You will not be able to request your data after you have deleted it</li>
+    <li>You will never be able to sign into this account again or make any changes to it</li>
+    <li>Other people will know that you've deleted your account because your user profile and posts will disappear</li>
+    <li>You will have to enter your current password to verify your identity before you can delete your account</li>
+    <li>Feed has no control over archives such as personal archives or the Web Archive. If any of your information is stored in such a way, it will still be available even if you delete your account</li>
+    <li><b>This is a permanent, irreversable procedure! That means there is no going back and your account will be lost FOREVER.</b></li>
+</ol>
+<input type="checkbox" id="settingsDeleteAccountConsent" oninput="settingsDeleteAccountVerifyConsent()">
+<label for="settingsDeleteAccountConsent">I understand all the above information and I still wish to delete my account</label>
+<br>
+<input type="password" id="settingsDeleteAccountCurrentPassword" placeholder="Current Password" oninput="settingsDeleteAccountVerifyConsent()"/><br>
+<button class="button danger" id="settingsDeleteAccountSubmit" onclick="settingsDeleteAccountSubmit()" disabled>Delete Account Permanently</button>

@@ -90,12 +90,22 @@ router.patch("/changeUsername", urlencodedparser, async (req, res)=>{
 })
 
 router.patch("/changeEmail", urlencodedparser, async (req, res)=>{
-    let paramsReq = arrReq.req(req.body, ["email"]);
+    let paramsReq = arrReq.req(req.body, ["email", "currentPassword"]);
     if(paramsReq != true){
         returnMessageService(new ReturnMessage("2305", `Missing parameter: ${paramsReq}`, 400, "error"), res);
         return;
     }
-    returnMessageService((await userController.changeEmail(req.body.email, req)), res)
+    returnMessageService((await userController.changeEmail(req.body.email, req.body.currentPassword, req)), res)
+
+})
+
+router.delete("/deleteAccount", urlencodedparser, async (req, res)=>{
+    let paramsReq = arrReq.req(req.body, ["currentPassword"]);
+    if(paramsReq != true){
+        returnMessageService(new ReturnMessage("2506", `Missing parameter: ${paramsReq}`, 400, "error"), res);
+        return;
+    }
+    returnMessageService((await userController.deleteUser(req, res, req.body.currentPassword)), res)
 
 })
 

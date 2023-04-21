@@ -12,6 +12,10 @@ h6,
 span,
 p,
 a,
+b,
+ul,
+li,
+ol,
 button,
 label,
 textarea {
@@ -23,11 +27,12 @@ body {
   min-height: calc(100vh - 20px);
   margin: 0;
   background: #EAEAEA;
+  margin-bottom: 30px
 }
 
 #app {
   max-width: var(--app-width);
-  margin: 10px auto;
+  margin: 0 auto;
   min-height: calc(100vh - 20px);
 }
 
@@ -50,6 +55,8 @@ body {
 #header {
   display: flex;
   padding: 0 10px;
+  align-items: center;
+  margin-top: 10px;
 }
 
 #profile {
@@ -440,4 +447,81 @@ input:focus {
 
 .settingsElement:last-child {
   border-bottom: none;
+}
+
+@keyframes deletingaccount {
+  30% { filter:grayscale(1) }
+  50% { filter:grayscale(1) }
+  100% { filter:grayscale(1) blur(50px); }
+}
+
+.takecarefriend {
+  animation-name: deletingaccount;
+  animation-duration: 4s;
+  animation-fill-mode: forwards;
+  overflow: hidden;
+}
+
+.takecarefriend #disabledOverlay {
+  display: block !important;
+}
+
+#disabledOverlay {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  display: none;
+  z-index: 9999;
+}
+
+#newPost {
+  margin-left: 10px;
+}
+
+#newPostContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+#composeContainer {
+  position: fixed;
+  width: 100vw;
+  margin: -10px 0;
+  height: 100vh;
+  background: rgba(0,0,0,.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 500;
+}
+#compose {
+  background: #F9F9F9;
+  padding: 15px;
+  border: 1px solid #8A8A8A;
+  border-radius: 5px;
+  width: 400px;
+  z-index: 501;
+}
+#composeContents {
+  resize: none;
+  width: 100%;
+  min-height: 140px;
+  box-sizing: border-box;
+  padding: 10px;
+
+}
+#composeSend {
+  margin-top: 10px;
+}
+
+#composeChars {
+  margin: 3px 0;
+  font-size: .8em;
+  opacity: 0.75;
+}
+
+.maxReached {
+  color: rgb(169, 0, 0)
 }

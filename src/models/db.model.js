@@ -8,7 +8,9 @@ class Database {
             user: db.user,
             password: db.pass,
             database:db.db,
-            port: db.port
+            port: db.port,
+            maxIdle:10,
+            idleTimeout:10000
         })
     }
 }
