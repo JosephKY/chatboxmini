@@ -46,7 +46,7 @@ function app() {
                     .addCategory(
                         new ViewCategory(
                             "Delete Account",
-                            new ViewPage("/", mainPage),
+                            new ViewPage("/setting/deleteAccount", mainPage),
                             "/assets/heartbreak.png"
                         )
                     )
@@ -258,4 +258,131 @@ async function settingsNewPasswordSubmit(){
     }
 
     notification("Password changed successfully", 5000, green)
+}
+
+function settingsNewEmailField(){
+    let currentPassInput = document.getElementById("settingsCurrentPasswordField").value
+    let emailInput = document.getElementById("settingsNewEmailField").value
+    let emailSubmit = document.getElementById("settingsNewEmailSubmit")
+    let val = valEmail(emailInput)
+
+    if(val && currentPassInput.length > 0){
+        emailSubmit.disabled = false
+    } else {
+        emailSubmit.disabled = true
+    }
+}
+
+async function settingsNewEmailSubmit(){
+    let currentPassInput = document.getElementById("settingsCurrentPasswordField")
+    let emailInput = document.getElementById("settingsNewEmailField")
+    let emailSubmit = document.getElementById("settingsNewEmailSubmit");
+
+    [currentPassInput, emailInput, emailSubmit].forEach(i=>{i.disabled = true})
+
+    let res = (await ajax({
+        "url":"/api/users/changeEmail",
+        "type":"PATCH",
+        "data":{
+            email:emailInput.value,
+            currentPassword:currentPassInput.value
+        }
+    }));
+
+    [currentPassInput, emailInput, emailSubmit].forEach(i=>{i.disabled = false})
+
+    if(!res){
+        notification("Something went wrong", 5000);
+        return;
+    }
+
+    if(res.type == 'error'){
+        notification(res.data, 5000);
+        return;
+    }
+
+    notification("Email changed successfully", 5000, green)
+    me.emailverified = 0;
+    document.getElementById("settingsEmailVerifyStatus").innerHTML = `${emailInput.value} is <b>not verified</b>`
+    document.getElementById("settingsSendEmailVerify").classList.remove("hidden")
+
+}
+
+async function settingsSendEmailVerify(){
+    document.getElementById("settingsSendEmailVerify").disabled = true;
+    if(me.emailverified == 1){
+        notification("Email already verified", 5000);
+        return;
+    }
+
+    let res = (await ajax({
+        "url":"/api/users/verify",
+        "type":"GET"
+    }))
+
+    document.getElementById("settingsSendEmailVerify").disabled = false;
+
+    if(!res){
+        notification("Something went wrong", 5000);
+        return;
+    }
+
+    if(res.type == 'error'){
+        notification(res.data, 5000);
+        return;
+    }
+
+    notification("Verification email sent. Check your inbox and spam folder", 5000, green);
+
+}
+
+function settingsDeleteAccountVerifyConsent(){
+    let consent = document.getElementById("settingsDeleteAccountConsent")
+    let currentPass = document.getElementById("settingsDeleteAccountCurrentPassword")
+    let submit = document.getElementById("settingsDeleteAccountSubmit")
+
+    if(consent.checked == true && currentPass.value.length > 0){
+        submit.disabled = false;
+    } else {
+        submit.disabled = true
+    }
+}
+
+async function settingsDeleteAccountSubmit(){
+    let consent = document.getElementById("settingsDeleteAccountConsent")
+    let currentPass = document.getElementById("settingsDeleteAccountCurrentPassword")
+    let submit = document.getElementById("settingsDeleteAccountSubmit");
+
+    [consent, currentPass, submit].forEach(i=>{
+        i.disabled = true;
+    })
+
+    let res = (await ajax({
+        "type":"DELETE",
+        "url":"/api/users/deleteAccount",
+        "data":{
+            currentPassword: currentPass.value
+        }
+    }))
+
+    if(!res){
+        notification("Something went wrong", 5000);
+        [consent, currentPass, submit].forEach(i=>{
+            i.disabled = false;
+        })
+        return;
+    }
+
+    if(res.type == 'error'){
+        notification(res.data, 5000);
+        [consent, currentPass, submit].forEach(i=>{
+            i.disabled = false;
+        })
+        return;
+    }
+
+    document.body.classList.add("takecarefriend")
+    setTimeout(()=>{
+        window.location.href = "/"
+    }, 7000)
 }

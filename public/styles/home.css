@@ -1,0 +1,7 @@
+#homeContent {
+    display: flex;
+    width: fit-content;
+    flex-flow: column;
+    margin: auto;
+    align-items: center;
+}

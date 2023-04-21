@@ -6,7 +6,8 @@ let userConfig = {
     settings:[
         "changeUsername",
         "changePassword",
-        "email"
+        "email",
+        "deleteAccount"
     ],
     reservedUsernames:[
         "home",
@@ -28,7 +29,8 @@ let userConfig = {
         "privacy",
         "guidelines",
         "support",
-        "report"
+        "report",
+        "verify"
     ]
 };
 

@@ -5,6 +5,43 @@ let cache = {}
 
 let green = "rgb(57, 155, 91)"
 
+// Function to get the value of a cookie by its name
+function getCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith(`${name}=`)) {
+            return cookie.substring(name.length + 1);
+        }
+    }
+    return null;
+}
+
+// Function to set a cookie with a name, value, and optional options
+function setCookie(name, value, options = {}) {
+    let cookie = `${name}=${encodeURIComponent(value)}`;
+    if (options.expires) {
+        const expires = options.expires.toUTCString();
+        cookie += `; expires=${expires}`;
+    }
+    if (options.path) {
+        cookie += `; path=${options.path}`;
+    }
+    if (options.domain) {
+        cookie += `; domain=${options.domain}`;
+    }
+    if (options.secure) {
+        cookie += '; secure';
+    }
+    document.cookie = cookie;
+}
+
+// Function to delete a cookie by its name
+function deleteCookie(name) {
+    setCookie(name, '', { expires: new Date(0) });
+}
+
+
 function setCache(title, key, object) {
     if (cache[title] == undefined) {
         cache[title] = {}
@@ -71,6 +108,8 @@ function notification(content, duration = 0, bgcolor = "#d02525") {
 notifElement.addEventListener("click", () => {
     notifElement.classList.remove("visible")
 })
+
+
 
 let me;
 
@@ -150,6 +189,7 @@ class Feed {
         document.body.onscroll = () => {
             if (window.scrollY >= (window.scrollMaxY - 50)) {
                 try {
+                    console.log("fire")
                     this.onEndScroll()
                 } catch (err) {
 
@@ -200,7 +240,7 @@ class Feed {
             postUsernameElement.innerHTML = postUser.username;
             postUsernameElement.classList.add("feedPostUsername")
             postUsernameElement.addEventListener("click", () => {
-                window.location.href = `/users/${postUser.username}`
+                window.location.href = `/${postUser.username}`
             })
             postInfoElement.appendChild(postUsernameElement)
 
@@ -409,10 +449,10 @@ class ViewPage {
         loadingAjax.remove()
         this.container.innerHTML = this.sourceContent;
 
-        if(this.onpageload != undefined)this.onpageload()
+        if (this.onpageload != undefined) this.onpageload()
     }
 
-    onload(method){
+    onload(method) {
         this.onpageload = method
         return this
     }
@@ -525,8 +565,8 @@ class Views {
     }
 }
 
-function isEmpty(el){
-    if(!el.value.trim())return true;
+function isEmpty(el) {
+    if (!el.value.trim()) return true;
     return false
 }
 
@@ -558,27 +598,86 @@ function valEmail(email) {
         );
 }
 
-function valPass(pass, verify){
-    if(pass.length < 8){
+function valPass(pass, verify) {
+    if (pass.length < 8) {
         return -1;
     }
 
-    if(pass.length > 128){
+    if (pass.length > 128) {
         return -2;
     }
 
-    if(pass != verify){
+    if (pass != verify) {
         return -3
     }
 
     return true
 }
 
+let composeContainer = document.getElementById("composeContainer")
+let composeContents = document.getElementById("composeContents")
+let composeSubmit = document.getElementById("composeSend")
+let composeChars = document.getElementById("composeChars")
+let composeMax = 256
+
+function composeInput(){
+    if(composeContents.value.length > composeMax || composeContents.value.trim().length == 0){
+        composeSubmit.disabled = true
+    } else {
+        composeSubmit.disabled = false
+    }
+
+    composeChars.innerHTML = `${composeContents.value.length} / ${composeMax}`
+    if(composeContents.value.length > composeMax){
+        composeChars.classList.add("maxReached")
+    } else {
+        composeChars.classList.remove("maxReached")
+    }
+}
+
+function composeHide(){
+    composeContainer.classList.add("hidden")
+    composeContents.value = ""
+}
+
+$("#composeContainer").on('click', e=>{
+    if(e.target !== composeContainer)return
+    composeHide()  
+})
+
+function compose(){
+    composeContainer.classList.remove("hidden")
+}
+
+async function composeCreate(){
+    [composeContents, composeSubmit].forEach(i=>{i.disabled = true});
+    let res = (await ajax({
+        url:"/api/posts/create",
+        data:{
+            content:composeContents.value
+        },
+        type:"POST"
+    }))
+
+    if(!res){
+        notification("Something went wrong. Please try again later!", 5000);
+        [composeContents, composeSubmit].forEach(i=>{i.disabled = false});
+    }
+
+    if(res.type == 'error'){
+        notification(res.data, 5000);
+        [composeContents, composeSubmit].forEach(i=>{i.disabled = false});
+    }
+
+    composeHide()  
+    notification("Post created successfully", 3000, green)
+}
 
 async function main() {
     me = (await ajax({ "url": "/api/users/me", "method": "GET" })).data
 
     if (me != null) {
+        document.getElementById("newPostContainer").classList.remove("hidden")
         document.getElementById("profileDetails").classList.remove("hidden")
         document.getElementById("signin").classList.add("hidden")
         document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)

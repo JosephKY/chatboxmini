@@ -1,7 +1,7 @@
 o Change Username option
 o Change Password option
-- Change/Verify Email Option
-- Delete Account option 2
+o Change/Verify Email Option
+o Delete Account option 2
 - New post menu 7
 - All Posts feed 4
 

@@ -92,7 +92,6 @@ async function get(userid) {
             return new ReturnMessage("602", "User does not exist", 400, "error")
         }
 
-        db.end()
         let ret = res[0];
         let user = new userModel(ret.id, ret.created, ret.username, ret.password, ret.email, ret.emailverified, ret.suspended, ret.verified, ret.dob)
 
@@ -119,7 +118,6 @@ async function getIdByUsername(username) {
             return new ReturnMessage("202", "User does not exist", 400, "error")
         }
 
-        db.end()
         return res[0].id;
     } catch (err) {
         console.log(err);
@@ -143,7 +141,6 @@ async function getIdByEmail(email) {
             return new ReturnMessage("302", "User does not exist", 400, "error")
         }
 
-        db.end()
         return res[0].id;
     } catch (err) {
         console.log(err);
@@ -277,8 +274,19 @@ async function sendVerificationEmail(userid) {
         return userData;
     }
 
-    if (userData.emailverified == 1) {
-        return new ReturnMessage("804", "Email already verified", 400, "error");
+    let ex = (await getIdByEmail(userData.email))
+
+    if(ex.constructor != undefined && ex.constructor.name == 'ReturnMessage'){
+        if(ex.code == "302"){
+            
+        } else {
+            return ex;
+        }
+    } else {
+        if(userData.id == ex){
+            return new ReturnMessage("804", "Email already verified", 400, "error");
+        }
+        return new ReturnMessage("820", "Email is already associated with another account", 400, 'error')
     }
 
     let emailAccount = emailConfig.accounts["no-reply@youcc.xyz"]
@@ -347,6 +355,21 @@ async function verifyEmail(token, userid) {
         return new ReturnMessage("900", "General Failure", 500, "error");
     }
 
+    let ex = (await getIdByEmail(userData.email))
+
+    if(ex.constructor != undefined && ex.constructor.name == 'ReturnMessage'){
+        if(ex.code == "302"){
+            
+        } else {
+            return ex;
+        }
+    } else {
+        if(userData.id == ex){
+            return new ReturnMessage("910", "Email is already associated with your account", 400, 'error')
+        }
+        return new ReturnMessage("911", "Email is already associated with another account", 400, 'error')
+    }
+
     let versKnownSql = "SELECT * FROM emailverification WHERE userid LIKE ? AND token LIKE ?";
     let versKnownInserts = [userid, token];
     try {
@@ -374,7 +397,7 @@ async function verifyEmail(token, userid) {
         let verifyInserts = [emailVer, userid];
         try {
             (await db.execute(verifySql, verifyInserts))
-            return new ReturnMessage("906", "Email verified successfully", 500, "error");
+            return new ReturnMessage("906", "Email verified successfully", 200, "emailVerify");
         } catch (err) {
             console.log(err)
             return new ReturnMessage("905", "General Failure", 500, "error");
@@ -585,10 +608,10 @@ async function updateUser(columns=[], values=[], id){
         let isLast = columnIndex == (columns.length - 1)
 
         let val = values[columnIndex]
-        inserts.push(columnName)
+        //inserts.push(columnName)
         inserts.push(val)
 
-        sql = sql + `?? = ?`
+        sql = sql + `${columnName} = ?`
         if(!isLast)sql = sql + ", "
     }
 
@@ -606,4 +629,31 @@ async function updateUser(columns=[], values=[], id){
     }
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser }
+async function deleteUser(userid){
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("2500", "General Failure", 500, "error");
+    }
+
+    try {
+        let sql = "DELETE FROM users WHERE id LIKE ?";
+        let inserts = [userid];
+        (await db.execute(sql, inserts))
+
+        sql = "DELETE FROM emailverification WHERE userid LIKE ?";
+        inserts = [userid];
+        (await db.execute(sql, inserts))
+
+        sql = "DELETE FROM posts WHERE userid LIKE ?";
+        inserts = [userid];
+        (await db.execute(sql, inserts))
+
+        cacheService.delCache("user", userid)
+        return true;
+    } catch(err){
+        console.log(err)
+        return new ReturnMessage("2501", "General Failure", 500, "error");
+    }
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser }

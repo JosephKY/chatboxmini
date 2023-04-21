@@ -29,11 +29,15 @@ let cache = {}
 
 let excache = new NodeCache()
 
-function setCache(title, key, object){
+function setCache(title, key, object, ttl=undefined, noclone=false){
     if(cache[title] == undefined){
-        cache[title] = new NodeCache()
+        cache[title] = new NodeCache({useClones:!noclone})
     }
-    cache[title].set(key, object)
+    if(ttl != undefined){
+        cache[title].set(key, object, ttl)
+    } else {
+        cache[title].set(key, object)
+    }
     return cache[title].get(key)
 }
 
@@ -41,7 +45,6 @@ function getCache(title, key){
     if(cache[title] == undefined)return false;
     let g = cache[title].get(key)
     if(g == undefined)return false;
-    console.log(g)
     return g
 }
 

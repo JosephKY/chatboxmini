@@ -211,10 +211,20 @@ async function changeUsername(newUsername, req){
     return new ReturnMessage("2005", "Username changed successfully", 200, 'usernameChange')
 }
 
-async function changeEmail(newEmail, req){
+async function changeEmail(newEmail, currentPassword, req){
     let login = (jwtService.isLoggedIn(req));
     if(login == false)return new ReturnMessage("2300", "Login required", 400, 'error')
     if(!userService.valEmail(newEmail))return new ReturnMessage("2301", "Email is invalid", 400, 'error')
+
+    let myData = (await userService.get(login.sub))
+    if(myData.constructor != undefined && myData.constructor.name == 'ReturnMessage')return myData;
+    if (!(await userService.verifyPass(myData.pass, currentPassword))) {
+        return new ReturnMessage("2306", "Bad Password", 400, "error");
+    }
+
+    if(myData.email == newEmail){
+        return new ReturnMessage("2307", "New email cannot be the same as your current one", 400, "error");
+    }
 
     let ex = (await userService.getIdByEmail(newEmail))
     if(ex.constructor != undefined && ex.constructor.name == 'ReturnMessage'){
@@ -223,7 +233,7 @@ async function changeEmail(newEmail, req){
             if(change !== true){
                 return change
             }
-            return new ReturnMessage("2304", "Email changed successfully", 200, 'error')
+            return new ReturnMessage("2304", "Email changed successfully", 200, 'changeEmail')
         } else {
             return ex;
         }
@@ -236,4 +246,20 @@ async function changeEmail(newEmail, req){
     
 }
 
-module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword, changeUsername, changeEmail }
+async function deleteUser(req, res, currentPassword){
+    let login = (jwtService.isLoggedIn(req));
+    if(login == false)return new ReturnMessage("2503", "Login required", 400, 'error')
+
+    let myData = (await userService.get(login.sub))
+    if(myData.constructor != undefined && myData.constructor.name == 'ReturnMessage')return myData;
+    if (!(await userService.verifyPass(myData.pass, currentPassword))) {
+        return new ReturnMessage("2504", "Bad Password", 400, "error");
+    }
+
+    res.cookie("jwt", "", { maxAge: 0 })
+    let del = (await userService.deleteUser(login.sub))
+    if(del != true)return del
+    return new ReturnMessage("2505", "Account deleted successfully", 200, 'userDelete')
+}
+
+module.exports = { create, login, sendVerificationEmail, verifyEmail, get, me, usernameTaken, sendResetEmail, resetPassword, changeUsername, changeEmail, deleteUser }
