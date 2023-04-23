@@ -1,3 +1,9 @@
 user-agent: *
 
 disallow: /api/
+disallow: /assets/
+disallow: /styles/
+disallow: /scripts/
+disallow: /help/raw/
+disallow: /report
+disallow: /settings

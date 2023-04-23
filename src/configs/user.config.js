@@ -30,7 +30,10 @@ let userConfig = {
         "guidelines",
         "support",
         "report",
-        "verify"
+        "verify",
+        "help",
+        "blog",
+        "api"
     ]
 };
 

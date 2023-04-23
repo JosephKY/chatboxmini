@@ -1,0 +1,16 @@
+.reportRuleInput {
+    margin-bottom: 12px;
+    margin-right: 6px;
+}
+
+label {
+    user-select: none;
+}
+
+#reportComment {
+    width: 500px;
+    height: 200px;
+    resize: none;
+    padding: 5px;
+    margin-bottom: 10px;
+}

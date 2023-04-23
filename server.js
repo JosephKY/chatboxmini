@@ -6,6 +6,7 @@ const fs = require("fs")
 // Services
 const restrictionsService = require("./src/services/restrictions.service")
 const localeService = require("./src/services/locale.service")
+const { isLoggedIn } = require("./src/services/jwt.service")
 
 // Routes
 const apiRoute = require("./src/routes/api.route")
@@ -14,6 +15,8 @@ const apiRoute = require("./src/routes/api.route")
 const restrictionsConfig = require("./src/configs/restrictions.config")
 const postConfig = require("./src/configs/post.config")
 const userConfig = require("./src/configs/user.config")
+const articlesConfig = require("./src/configs/articles.config")
+const adminConfig = require("./src/configs/admin.config")
 
 // Work
 for (let name in restrictionsConfig) {
@@ -41,15 +44,16 @@ app.use(express.static('public', {
 
 app.use("/api", apiRoute)
 
-function renderPage(req, res, page, noindex=false) {
+function renderPage(req, res, page, index="index", extras={}) {
     try {
         const localeData = localeService.getLocale(req, res);
-        const replicated = {
+        let replicated = {
             locale: localeData,
             page: page,
         };
-        if(!noindex){
-            res.render("index", replicated);
+        replicated = Object.assign({}, replicated, extras)
+        if(index != false){
+            res.render(index, replicated);
         } else {
             res.render(page, replicated)
         }
@@ -89,10 +93,49 @@ app.get("/verify", async (req, res) => {
     renderPage(req, res, "verify")
 })
 
+app.get("/terms", async (req, res) => {
+    renderPage(req, res, "terms")
+})
+
+app.get("/privacy", async (req, res) => {
+    renderPage(req, res, "privacy")
+})
+
+app.get("/guidelines", async (req, res) => {
+    renderPage(req, res, "guidelines")
+})
+
+app.get("/report", async (req, res) => {
+    renderPage(req, res, "report")
+})
+
+app.get("/help", async (req, res) => {
+    renderPage(req, res, "help", "helpindex", { articles: articlesConfig })
+})
+
 userConfig.settings.forEach(setting=>{
     app.get(`/setting/${setting}`, async(req, res)=>{
-        renderPage(req, res, `settings/${setting}`, true)
+        renderPage(req, res, `settings/${setting}`, false)
     })
+})
+
+for(let [articleId, _] of Object.entries(articlesConfig)){
+    app.get(`/help/raw/${articleId}`, async(req, res)=>{
+        renderPage(req, res, `articles/${articleId}`, false)
+    })
+
+    app.get(`/help/${articleId}`, async (req, res) => {
+        renderPage(req, res, "helparticle", "helpindex", { article: articleId, articles: articlesConfig })
+    })
+}
+
+app.get("/admin", async (req, res)=>{
+    let login = isLoggedIn(req)
+    if(!login || !(adminConfig.admins.includes(login.sub))){
+        renderPage(req, res, "user")
+    } else {
+        renderPage(req, res, "admin")
+    }
 })
 
 app.get("/:username", async (req, res) => {

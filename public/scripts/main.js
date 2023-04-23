@@ -1,7 +1,35 @@
+console.log(
+    "%c🛑 STOP NOW! 🛑",
+    "color: red;font-family: font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;font-size:8em"
+)
+
+console.log("%cThe console is a tool intended for developers. Anything you input into this console may risk your account being STOLEN and your personal information COMPROMISED. If anyone told you to input something into this console, THEY ARE LIKELY ATTEMPTING TO SCAM YOU. Do NOT input anything into this console that you don't understand or share any browser cookies!", "background: yellow; color: black; font-size: 2em; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;")
+console.log("%cThere is nothing beyond this point worth risking your account over!", "background: red; color: white; font-size: 2em; font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;")
+
+
 let notifElement = document.getElementById("notification")
 let lastNotifCall = 0
 
 let cache = {}
+let availableLocales = [
+    "en-US",
+    "zh-CN",
+    "ru-RU",
+    "fr-FR",
+    "es-ES",
+    "en-GB",
+    "de-DE",
+    "pt-BR",
+    "en-CA",
+    "es-MX",
+    "it-IT",
+    "ja-JP"
+]
+
+let userlocale = getCookie("locale")
+if (!userlocale || !availableLocales.includes(userlocale)) {
+    userlocale = 'en-US';
+}
 
 let green = "rgb(57, 155, 91)"
 
@@ -39,6 +67,10 @@ function setCookie(name, value, options = {}) {
 // Function to delete a cookie by its name
 function deleteCookie(name) {
     setCookie(name, '', { expires: new Date(0) });
+}
+
+if(getCookie('cookieagreement') == null){
+    document.getElementById("cookienoticecontainer").classList.remove("hidden")
 }
 
 
@@ -108,8 +140,6 @@ function notification(content, duration = 0, bgcolor = "#d02525") {
 notifElement.addEventListener("click", () => {
     notifElement.classList.remove("visible")
 })
-
-
 
 let me;
 
@@ -200,8 +230,19 @@ class Feed {
         this.type = type
     }
 
+    feederr(details){
+        let errElement = document.createElement("p")
+        errElement.classList.add("feedErrorInfo")
+        errElement.innerHTML = details
+        this.container.appendChild(errElement)
+        this.noload = true
+    }
+
     async load(params) {
-        if (this.noload) return;
+        let prevBodySroll = window.scrollMaxY
+        if (this.noload){
+            return
+        }
         this.noload = true
         let load = (await ajax({
             "url": `/api/posts/feed/${this.type}`,
@@ -209,24 +250,28 @@ class Feed {
             "data": params
         }))
 
-        if (load.type == 'error') return;
+        if (!load || load.type == 'error'){
+            this.feederr("Something went wrong")
+            return
+        };
 
         let posts = load.data;
 
-        if (posts.length == 0) return
+        if (posts.length == 0){
+            this.feederr("No posts remaining")
+            return;
+        }
 
         this.lastPostId = posts[posts.length - 1].id
 
-        posts.forEach(async post => {
+        for (let post of posts) {
             if (post.deleted == 1) {
-                console.log("DELETED")
-                return
+                continue
             }
 
             let postUser = (await getUser(post.userid));
             if (!postUser) {
-                console.log("NO USER")
-                return;
+                continue;
             }
 
             let postElement = document.createElement("div")
@@ -252,7 +297,7 @@ class Feed {
             }
 
             let postCreatedElement = document.createElement("span")
-            postCreatedElement.innerHTML = (new Date(post.created * 1000)).toDateString();
+            postCreatedElement.innerHTML = (new Date(post.created * 1000)).toLocaleString(userlocale)
             postCreatedElement.classList.add("feedPostCreated")
             postInfoElement.appendChild(postCreatedElement)
 
@@ -280,6 +325,15 @@ class Feed {
                                         notification("Post deleted", 3000)
                                     },
                                     "/assets/delete.png"
+                                )
+                                break
+                            case "report":
+                                cx.add(
+                                    "Report",
+                                    () => {
+                                        window.location.href = `/report?target=${post.id}&type=post&hint=${encodeURIComponent(post.content)}`
+                                    },
+                                    "/assets/report.png"
                                 )
                                 break
                         }
@@ -416,9 +470,13 @@ class Feed {
 
 
             this.container.appendChild(postElement)
-        })
+        }
 
+        
         this.noload = false;
+        if(window.scrollMaxY == prevBodySroll){
+            this.onEndScroll()
+        }
     }
 }
 
@@ -620,74 +678,89 @@ let composeSubmit = document.getElementById("composeSend")
 let composeChars = document.getElementById("composeChars")
 let composeMax = 256
 
-function composeInput(){
-    if(composeContents.value.length > composeMax || composeContents.value.trim().length == 0){
+function composeInput() {
+    if (composeContents.value.length > composeMax || composeContents.value.trim().length == 0) {
         composeSubmit.disabled = true
     } else {
         composeSubmit.disabled = false
     }
 
     composeChars.innerHTML = `${composeContents.value.length} / ${composeMax}`
-    if(composeContents.value.length > composeMax){
+    if (composeContents.value.length > composeMax) {
         composeChars.classList.add("maxReached")
     } else {
         composeChars.classList.remove("maxReached")
     }
 }
 
-function composeHide(){
+function composeHide() {
     composeContainer.classList.add("hidden")
     composeContents.value = ""
 }
 
-$("#composeContainer").on('click', e=>{
-    if(e.target !== composeContainer)return
-    composeHide()  
+$("#composeContainer").on('click', e => {
+    if (e.target !== composeContainer) return
+    composeHide()
 })
 
-function compose(){
+function compose() {
     composeContainer.classList.remove("hidden")
 }
 
-async function composeCreate(){
-    [composeContents, composeSubmit].forEach(i=>{i.disabled = true});
+async function composeCreate() {
+    [composeContents, composeSubmit].forEach(i => { i.disabled = true });
     let res = (await ajax({
-        url:"/api/posts/create",
-        data:{
-            content:composeContents.value
+        url: "/api/posts/create",
+        data: {
+            content: composeContents.value
         },
-        type:"POST"
+        type: "POST"
     }))
 
-    if(!res){
+    if (!res) {
         notification("Something went wrong. Please try again later!", 5000);
-        [composeContents, composeSubmit].forEach(i=>{i.disabled = false});
+        [composeContents, composeSubmit].forEach(i => { i.disabled = false });
     }
 
-    if(res.type == 'error'){
+    if (res.type == 'error') {
         notification(res.data, 5000);
-        [composeContents, composeSubmit].forEach(i=>{i.disabled = false});
+        [composeContents, composeSubmit].forEach(i => { i.disabled = false });
     }
 
-    composeHide()  
+    composeHide()
     notification("Post created successfully", 3000, green)
 }
 
+async function bigerror(code){
+    document.getElementById("catostrophicerrorcode").innerHTML = code
+    document.getElementById("catostrophicerror").classList.remove("hidden")
+}
+
 async function main() {
-    me = (await ajax({ "url": "/api/users/me", "method": "GET" })).data
-
-    if (me != null) {
-        document.getElementById("newPostContainer").classList.remove("hidden")
-        document.getElementById("profileDetails").classList.remove("hidden")
-        document.getElementById("signin").classList.add("hidden")
-        document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)
-        document.getElementById("myprofileLink").href = `/${me.username}`
-    }
-
     try {
-        app()
+        me = (await ajax({ "url": "/api/users/me", "method": "GET" }))
+
+        if (me.type == 'error') {
+            throw `AUTHFAILED-${me.code}`;
+        }
+
+        me = me.data
+
+        if (me != null) {
+            document.getElementById("newPostContainer").classList.remove("hidden")
+            document.getElementById("profileDetails").classList.remove("hidden")
+            document.getElementById("signin").classList.add("hidden")
+            document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)
+            document.getElementById("myprofileLink").href = `/${me.username}`
+        }
+
+        try {
+            app()
+        } catch (err) {
+            console.log("No App")
+        }
     } catch (err) {
-        console.log("No App")
+        bigerror(err)
     }
 
 }

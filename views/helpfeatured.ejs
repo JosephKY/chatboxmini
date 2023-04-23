@@ -1,0 +1,23 @@
+<div id="featured">
+    <h1>Featured Articles</h1>
+    <div id="articlesListing">
+        
+    </div>
+</div>
+
+<script>
+
+    let featuredArticles = [
+        "terms_4-22-23",
+        "privacy_4-22-23",
+        "guidelines_4-22-23"
+    ]
+
+    function loadFeatured(){
+        featuredArticles.forEach(articleId=>{
+        let article = articles[articleId];
+        let listing = articleListing(article)
+        document.getElementById("articlesListing").appendChild(listing)
+    })
+    }
+</script>

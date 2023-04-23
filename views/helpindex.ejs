@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Feed Help</title>
+    <link rel="stylesheet" href="/styles/helpindex.css" />
+</head>
+<script src="/scripts/jquery.js"></script>
+<script>
+    let articles = <%-JSON.stringify(articles) %>
+</script>
+<div id="cookienoticecontainer" class="hidden">
+    <div id="cookienotice">
+        <h1>Cookie Notice</h1>
+        <p>Feed uses cookies for technical necessities such as authentication and localization. By continuing to use
+            this service you agree to the usage of cookies.</p>
+        <button class="button"
+            onclick="document.getElementById('cookienoticecontainer').classList.add('hidden'); setCookie('cookieagreement', Date.now(), {expires: new Date(Date.now() + 31540000000)})">Okay</button>
+    </div>
+</div>
+<div id="header">
+    <a id="logoContainer" href="/help">
+        <img src="/assets/logohelp.png" alt="Logo Help" id="logo" />
+    </a>
+    <input type="text" id="articleSearchInput" placeholder="Search for an article" />
+    <button class="button" onclick="window.location.href = '/'">Back to Feed</button>
+</div>
+<div id="searchResultsMaster" class="hidden">
+    <div id="searchResultsContainer">
+        <p id="searchResultsNoResults" class="hidden">No Results</p>
+    </div>
+</div>
+<div id="main">
+    <%-include (`${page}.ejs`)%>
+</div>
+<script src="/scripts/help.js"></script>
+
+</html>
