@@ -9,6 +9,7 @@ class User{
         this.suspended = suspended
         this.verified = verified
         this.dob = dob
+        this.actions = []
     }
 }
 

@@ -2,8 +2,8 @@ o Change Username option
 o Change Password option
 o Change/Verify Email Option
 o Delete Account option 2
-- New post menu 7
-- All Posts feed 4
+o New post menu 7
+o All Posts feed 4
 
 - Report posts functionality 1
 - Report users functionality 3
@@ -12,9 +12,9 @@ o Delete Account option 2
 - Admin post moderation 1
 
 - Rate limit all endpoints 4
-- Terms of service 6
-- Privacy Policy 5
-- Community guidelines 8
+o Terms of service 6
+o Privacy Policy 5
+o Community guidelines 8
 
 - Language Option 4
 - Localization 5

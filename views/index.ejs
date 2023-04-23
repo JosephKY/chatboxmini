@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html>
-    <script>
-        let locale = <%-JSON.stringify(locale)%>;
-    </script>
-    <script src="/scripts/jquery.js"></script>
-    <head>
-        <title>Feed</title>
-        <link rel="stylesheet" href="/styles/main.css"/>
-    </head>
-    <body class="">
-        <div id="disabledOverlay"></div>
-        <p id="notification"></p>
-        <div id="composeContainer" class="hidden">
-            <%-include ('compose.ejs')%>
+<script>
+    let locale = <%-JSON.stringify(locale) %>;
+</script>
+<script src="/scripts/jquery.js"></script>
+
+<head>
+    <title>Feed</title>
+    <link rel="stylesheet" href="/styles/main.css" />
+</head>
+
+<body>
+    <div id="cookienoticecontainer" class="hidden">
+        <div id="cookienotice">
+            <h1>Cookie Notice</h1>
+            <p>Feed uses cookies for technical necessities such as authentication and localization. By continuing to use
+                this service you agree to the usage of cookies.</p>
+            <button class="button"
+                onclick="document.getElementById('cookienoticecontainer').classList.add('hidden'); setCookie('cookieagreement', Date.now(), {expires: new Date(Date.now() + 31540000000)})">Okay</button>
         </div>
-        <div id="app">
-            <%-include ('header.ejs')%>
-            <%-include (`${page}.ejs`)%> 
-        </div>
-    </body>   
-    <script src="/scripts/main.js"></script>
+    </div>
+    <div id="catostrophicerror" class="hidden">
+        <h1>We hit a snag!</h1>
+        <h3>Something went terribly wrong and Feed crashed. Please try again later!</h3>
+        <p>If you contact <a href="mailto:support@youcc.xyz">support</a>, give them this error code: <b
+                id="catostrophicerrorcode"></b></p>
+    </div>
+    <div id="disabledOverlay"></div>
+    <p id="notification"></p>
+    <div id="composeContainer" class="hidden">
+        <%-include ('compose.ejs')%>
+    </div>
+    <div id="app">
+        <%-include ('header.ejs')%>
+            <%-include (`${page}.ejs`)%>
+    </div>
+</body>
+<script src="/scripts/main.js"></script>
+
 </html>

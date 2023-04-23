@@ -1,0 +1,45 @@
+#articleTitle {
+    font-size: 4em;
+    margin: 0;
+}
+
+#articleSubtitle {
+    margin-bottom: 0px;
+}
+
+#articleDate {
+    font-size: 1.25em;
+    opacity: 0.5;
+}
+
+#article {
+    width: 900px;
+    margin: 0 auto;
+    padding: 10px 0;
+    background: #FFF;
+    margin-top: 200px;
+    padding: 64px;
+    box-sizing: border-box;
+    box-shadow: 0 0 15px #0000001c;
+}
+
+
+#articleLoading {
+    margin: auto;
+    display: block;
+    padding: 128px 0;
+}
+
+
+#articleIcon {
+    width: 48px;
+    height: 48px;
+}
+
+body {
+    background: #EEE;
+}
+
+.articleListing {
+    background: #FFF
+}

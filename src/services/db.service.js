@@ -29,6 +29,7 @@ async function newdb() {
         return db.conn;
     } catch (err) {
         console.log(err);
+        cacheService.delCache("dbconn", "main")
         return false;
     }
 }

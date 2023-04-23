@@ -100,11 +100,7 @@ async function verifyEmail(token, req){
 }
 
 async function get(userid, req){
-    let isSelf = false;
     let login = jwtService.isLoggedIn(req)
-    if(login != false && login.sub == userid) {
-        isSelf = true;
-    }
 
     
 
@@ -120,9 +116,12 @@ async function get(userid, req){
     ret.username = userData.username
     ret.suspended = userData.suspended
     ret.verified = userData.verified
-    if(isSelf){
+    ret.actions = []
+    if(login != false && login.sub == userData.id){
         ret.email = userData.email
         ret.emailverified = userData.emailverified
+    } else {
+        ret.actions.push("report")
     }
 
     return new ReturnMessage("1000", ret, 200, "userGet")

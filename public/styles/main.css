@@ -34,8 +34,29 @@ body {
   max-width: var(--app-width);
   margin: 0 auto;
   min-height: calc(100vh - 20px);
+  padding: 0 10px;
 }
 
+
+#catostrophicerror {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  background: #0b0b0b;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column;
+}
+#catostrophicerror * {
+  color: #FEFEFE;
+}
+
+#catostrophicerror a {
+  color:rgb(37, 77, 255) !important;
+}
 
 #logo {
   width: 90px;
@@ -193,6 +214,10 @@ body {
   display: inline !important;
 }
 
+.feedErrorInfo {
+  text-align: center;
+  font-weight: bold;
+}
 
 .feedPostUsername:hover {
   cursor: pointer;
@@ -524,4 +549,31 @@ input:focus {
 
 .maxReached {
   color: rgb(169, 0, 0)
+}
+
+
+#cookienotice {
+  background: #EEE;
+  border: 1px solid #BBB;
+  border-radius: 5px;
+  padding: 25px;
+  box-sizing: border-box;
+  max-width: 400px;
+  height:fit-content
+}
+
+
+#cookienoticecontainer {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: #00000075;
+  z-index: 999;
+  top: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#cookienotice h1 {
+  margin-top: 0;
 }

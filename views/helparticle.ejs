@@ -1,0 +1,20 @@
+<script>
+    let articleId = "<%-(article)%>";
+</script>
+<link rel="stylesheet" href="/styles/helparticle.css"/>
+
+<div id="article">
+    <div id="articleHeader">
+        <img id="articleIcon"/>
+        <h1 id="articleTitle"></h1>
+    </div>
+    <h2 id="articleSubtitle"></h2>
+    <h2 id="articleDate"></h2>
+    <div id="articleContent">
+        <img id="articleLoading" src="/assets/loading.gif"/>
+    </div>
+</div>
+
+<%-include("helpfeatured.ejs")%>
+
+    <script src="/scripts/helparticle.js"></script>

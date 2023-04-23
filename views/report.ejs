@@ -1,0 +1,30 @@
+<link rel="stylesheet" href="/styles/report.css"/>
+<title>Feed - Create Report</title>
+
+<h1>Create Report</h1>
+<h4 id="reportHint"></h4>
+<h3>What rule is the content violating?</h3>
+<div id="reportRules">
+
+</div>
+
+<div id="reportMethodContainer" class="hidden">
+    <h3>How does it violate this rule?</h3>
+    <div id="reportMethod">
+
+    </div>
+</div>
+
+<div id="reportCopyright" class="hidden">
+    <h4>Report copyright infringement</h4>
+    <button class="button" onclick="window.open('/help/fileaclaim', '_blank')">Help Page</button>
+</div>
+
+<div id="reportConclusion" class="hidden">
+    <h4>Extra comments</h4>
+    <textarea id="reportComment" max="1028" placeholder="Max 1028 Characters"></textarea><br>
+    <button class="button">Submit Report</button>
+    <h5>Notice: Misusing or abusing the report system can devalue your future reports or blacklist you from the report system. You will not be punished for submitting a false report in mistake</h5>
+</div>
+
+<script src="/scripts/report.js"></script>
