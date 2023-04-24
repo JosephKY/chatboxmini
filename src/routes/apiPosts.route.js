@@ -5,6 +5,7 @@ const express = require("express");
 const returnMessageService = require("../services/returnmessage.service");
 const arrReqService = require("../services/arrreq.service")
 const restrictionsService = require("../services/restrictions.service")
+const userService = require("../services/users.service")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model"); 
@@ -18,6 +19,7 @@ const bodyparser = require('body-parser');
 const urlencodedparser = bodyparser.urlencoded({extended:false})
 
 router.post("/create", urlencodedparser, async (req, res)=>{
+    if((await userService.manageRestriction(req, res)) === true)return
     let arrreq = arrReqService.req(req.body, ["content"])
     if(arrreq !== true){
         returnMessageService(new ReturnMessage("1306", `Missing parameter: ${arrreq}`, 400, 'error'), res)
@@ -31,6 +33,7 @@ router.get("/feed/:type", async (req, res)=>{
 })
 
 router.get("/delete/:id", async(req, res)=>{
+    if((await userService.manageRestriction(req, res)) === true)return
     returnMessageService(await postsController.deletePost(req.params.id, req), res)
 })
 

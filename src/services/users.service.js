@@ -3,6 +3,7 @@ const jwtConfig = require("../configs/jwt.config")
 const fs = require("fs")
 const emailConfig = require("../configs/email.config")
 const userConfig = require("../configs/user.config")
+const adminConfig = require("../configs/admin.config")
 
 // Modules
 const ReturnMessage = require("../models/returnMessage.model")
@@ -15,6 +16,7 @@ const userModel = require("../models/user.model")
 const dbService = require("./db.service")
 const jwtService = require("./jwt.service")
 const cacheService = require("./cache.service")
+const returnMessageService = require("./returnmessage.service")
 
 // Work
 let emailVerificationHtml = fs.readFileSync("views/emailVerification.ejs").toString('utf-8');
@@ -425,6 +427,10 @@ function minAge(dateString) {
         return false;
     }
 
+    if(birthDate.getFullYear() < 1916){
+        return -2;
+    }
+
     return Math.floor(birthDate.getTime() / 1000);
 }
 
@@ -657,4 +663,36 @@ async function deleteUser(userid){
     }
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser }
+async function manageRestriction(req, res){
+    let login = jwtService.isLoggedIn(req)
+    if(!login)return false;
+    login = login.sub
+
+    let restricted = (await accountRestricted(login))
+    if(restricted.constructor != undefined && restricted.constructor.name == 'ReturnMessage'){
+        returnMessageService(restricted, res);
+        return true;
+    }
+
+    if(restricted){
+        returnMessageService((new ReturnMessage("-1", "Access Denied", 403, 'error')), res);
+        return true;
+    }
+
+    return false;
+}
+
+async function accountRestricted(id){
+    let user = (await get(id))
+    if(user.constructor != undefined && user.constructor.name == 'ReturnMessage')return user;
+
+    if(user.suspended == 1)return true;
+    
+    return false;
+}
+
+function admin(id){
+    return adminConfig.admins.includes(id)
+}
+
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin }

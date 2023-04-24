@@ -750,6 +750,10 @@ async function main() {
             document.getElementById("signin").classList.add("hidden")
             document.getElementById("myprofileLink").innerHTML = document.getElementById("myprofileLink").innerHTML.replace("%username%", me.username)
             document.getElementById("myprofileLink").href = `/${me.username}`
+            if(me.suspended == 1){
+                document.getElementById("accountSuspensionNotice").classList.remove("hidden")
+                document.getElementById("newPost").disabled = true
+            }
         }
 
         try {
