@@ -1,0 +1,48 @@
+#admindisclaimer {
+    box-sizing: border-box;
+    padding: 10px 25px;
+    background: #ffea7a;
+    border: 2px solid #ffb70e;
+    border-radius: 5px;
+    margin-top:30px;
+}
+
+#adminControls {
+    min-width: 250px;
+    height: inherit;
+    border-right: 1px solid #AAA;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#adminMaster {
+    border: 1px solid #AAA;
+    min-height: 300px;
+    display: flex;
+}
+
+#adminPage {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+#adminPage input {
+    margin-bottom: 5px;
+}
+
+#adminPage h1:first-child {
+    margin-top: 0;
+}
+
+#adminPage h1:not(:first-child) {
+    margin-top: 50px;
+}
+
+#adminPage .pageLoading {
+    margin: auto;
+    display: block;
+    height: 100%;
+    object-fit: none;
+    width: inherit;
+}

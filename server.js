@@ -44,7 +44,7 @@ app.use(express.static('public', {
 
 app.use("/api", apiRoute)
 
-function renderPage(req, res, page, index="index", extras={}) {
+function renderPage(req, res, page, index="index", extras={}, adminonly=false) {
     try {
         const localeData = localeService.getLocale(req, res);
         let replicated = {
@@ -52,11 +52,20 @@ function renderPage(req, res, page, index="index", extras={}) {
             page: page,
         };
         replicated = Object.assign({}, replicated, extras)
-        if(index != false){
-            res.render(index, replicated);
-        } else {
-            res.render(page, replicated)
+
+        let render = index
+        if(index == false){
+            render = page
+        } 
+
+        let login = isLoggedIn(req)
+        if(adminonly && (!login || !(adminConfig.admins.includes(login.sub)))){
+            page = "user";
+            replicated.page = "user";
+            render = "index";
         }
+
+        res.render(render, replicated)
     } catch (error) {
         // Handle any errors that might occur
         res.status(500).send("Internal Server Error")
@@ -130,12 +139,17 @@ for(let [articleId, _] of Object.entries(articlesConfig)){
 }
 
 app.get("/admin", async (req, res)=>{
-    let login = isLoggedIn(req)
-    if(!login || !(adminConfig.admins.includes(login.sub))){
-        renderPage(req, res, "user")
-    } else {
-        renderPage(req, res, "admin")
-    }
+    renderPage(req, res, "admin", "index", {}, true)
+})
+
+userConfig.admin.forEach(adminPage=>{
+    app.get(`/admin/${adminPage}`, async (req, res) => {
+        renderPage(req, res, `admin/${adminPage}`, false, {}, true)
+    })
+})
+
+app.get("/post/:id", async (req, res) => {
+    renderPage(req, res, "post")
 })
 
 app.get("/:username", async (req, res) => {
@@ -145,10 +159,6 @@ app.get("/:username", async (req, res) => {
 app.get('*', async (req, res) => {
     renderPage(req, res, "notfound")
 })
-
-
-
-
 
 app.listen(port, () => {
     console.log(`Chatbox Mini listening on port ${port}`)

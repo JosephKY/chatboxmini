@@ -35,8 +35,7 @@ router.get("/delete/:id", async(req, res)=>{
 })
 
 router.get("/:id", async (req, res)=>{
-    let p = (await postsController.get(req.params.id, req.socket.remoteAddress))
-    console.log(p)
+    let p = (await postsController.get(req.params.id, req))
     returnMessageService(p, res);
 })
 

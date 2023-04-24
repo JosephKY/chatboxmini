@@ -1,0 +1,26 @@
+#post {
+    width: 600px;
+    margin: auto;
+}
+
+.bigPost .feedPostContent * {
+    font-size: 1.35em;
+}
+
+.feedPost.bigPost {
+    border: 1px solid #AAA;
+    padding: 25px;
+}
+
+.bigPost .feedPostInfo * {
+    font-size: 1.15em;
+}
+
+.bigPost .feedPostContent {
+    margin-top: 15px;
+}
+
+.bigPost:hover {
+    cursor: default !important;
+    background: #EAEAEA !important;
+}
