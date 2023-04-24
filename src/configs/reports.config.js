@@ -95,4 +95,4 @@ let config = {
     "types":["user","post"]
 }
 
-module.exports = rules
+module.exports = config

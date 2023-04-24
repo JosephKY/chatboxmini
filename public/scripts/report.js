@@ -1,29 +1,29 @@
 let reportConfig = {
-    "rules":{
-        "Violent Speech":[
+    "rules": {
+        "Violent Speech": [
             "Threatening Violence",
             "Promoting Violence",
             "Using Violent Speech to Intimidate or Harass"
         ],
-        "Violent and Hateful Entities":[
+        "Violent and Hateful Entities": [
             "Promoting Hate Groups",
             "Promoting Terrorist Organizations",
             "Planning or Coordinating Violent or Hateful Activities",
             "Praising or Worshiping Perpetrators of Violent Attacks",
-            
+
         ],
-        "Child Safety":[
+        "Child Safety": [
             "Sharing Explicit Content that Depicts Minors",
             "Promoting Sexual Abuse of Minors",
             "Soliciting Explicit Content that Depicts Minors"
         ],
-        "Abuse and Harassment":[
+        "Abuse and Harassment": [
             "Targeting or Harassing Users",
             "Using Derogatory Language or Slurs",
             "Posting Unauthorized Videos or Images",
             "Impersonating an Individual or Organization"
         ],
-        "Hateful Conduct":[
+        "Hateful Conduct": [
             "Promoting Hate Speech",
             "Engaging in Hate Speech",
             "Promoting Eugenics",
@@ -31,18 +31,18 @@ let reportConfig = {
             "Dehumanizing a Group of People",
             "Sharing Hateful Insignia or Symbols",
         ],
-        "Suicide and Self-Harm":[
+        "Suicide and Self-Harm": [
             "Encouraging Suicide or Self-Harm",
             "Sharing Graphic Content Related to Suicide or Self-Harm",
             "Providing Instructions or Methods of Suicide or Self-Harm",
             "User is Considering Suicide or Self-Harm"
         ],
-        "Sensitive Media":[
+        "Sensitive Media": [
             "Posting Content Intended to Shock or Traumatize",
             "Sharing Extremely Violent Content",
             "Sharing Graphic Content Related to Violent Attacks"
         ],
-        "Illegal Conduct":[
+        "Illegal Conduct": [
             "Buying or Selling Illegal Goods and Services",
             "Encouraging or Facilitating Illegal Activity",
             "Promoting or Sharing Content Related to Illegal Activities",
@@ -51,17 +51,17 @@ let reportConfig = {
             "Impersonating an Individual or Organization",
             "Sharing Methods on How to Break the Law"
         ],
-        "Private Information":[
+        "Private Information": [
             "Leaking Private Information or Doxxing",
             "Sharing Unauthorized Photos or Images",
             "Collecting Private Information"
         ],
-        "Non-Consent":[
+        "Non-Consent": [
             "Sharing Unauthorized Photos and Videos",
             "Sharing Revenge Porn or Other Content Intended to Humiliate",
             "Sharing Explicit Content of Minors"
         ],
-        "Hacking and Platform Safety":[
+        "Hacking and Platform Safety": [
             "Account is Compromised",
             "Attempting to Hack into Accounts or the Platform",
             "Sharing Malware",
@@ -69,7 +69,7 @@ let reportConfig = {
             "Sharing Methods or Software Designed for Hacking",
             "Reserving Usernames or Selling Accounts"
         ],
-        "Misinformation and Disinformation":[
+        "Misinformation and Disinformation": [
             "Spreading False Information",
             "Spreading Propaganda",
             "Sharing False Information about Elections or Political Events",
@@ -78,12 +78,12 @@ let reportConfig = {
             "Sharing Manipulated Images or Videos Intended to Deceive or Mislead",
             "Using Deepfake Technology to Deceive or Mislead"
         ],
-        "Copyright":[
+        "Copyright": [
             "Infringing on an Individual or Organization's Copyright or Trademark",
             "Promoting Counterfeit Goods or Services",
             "Sharing Content that Promotes Piracy"
         ],
-        "Spam":[
+        "Spam": [
             "General Spam and Unwanted Content",
             "Promoting Scams",
             "Advertising Without Permission",
@@ -92,7 +92,7 @@ let reportConfig = {
             "Reserving Usernames or Selling Accounts"
         ]
     },
-    "types":["user","post"]
+    "types": ["user", "post"]
 }
 
 let params = new URLSearchParams(window.location.search)
@@ -102,10 +102,14 @@ let reportHint = params.get("hint")
 let ruleInputs = document.getElementById("reportRules")
 let methodInputsContainer = document.getElementById("reportMethodContainer")
 let methodInputs = document.getElementById("reportMethod")
+let submitButton = document.getElementById("submitReport")
+
+let selectedRule = undefined;
+let selectedMethod = undefined;
 
 if (!reportType || !reportTarget || isNaN(parseInt(reportTarget)) || !reportConfig.types.includes(reportType)) window.location.href = '/'
 
-if(reportHint != undefined){
+if (reportHint != undefined) {
     document.getElementById("reportHint").innerHTML = `Reporting: "${reportHint}"`
 }
 
@@ -113,6 +117,7 @@ for (let [rule, methods] of Object.entries(reportConfig.rules)) {
     methods.push("Other")
 
     let ruleInput = document.createElement("input")
+    ruleInput.setAttribute("ruleName", rule)
     ruleInput.type = 'radio'
     ruleInput.name = 'reportRule'
     ruleInput.classList.add("reportRuleInput")
@@ -127,6 +132,8 @@ for (let [rule, methods] of Object.entries(reportConfig.rules)) {
     ruleInputs.appendChild(document.createElement("br"))
 
     ruleInput.oninput = () => {
+        selectedRule = ruleInput
+
         while (methodInputs.firstChild) {
             methodInputs.removeChild(methodInputs.firstChild)
         }
@@ -136,6 +143,7 @@ for (let [rule, methods] of Object.entries(reportConfig.rules)) {
 
         methods.forEach(method => {
             let methodInput = document.createElement("input")
+            methodInput.setAttribute("methodName", method)
             methodInput.type = 'radio'
             methodInput.name = 'reportMethod'
             methodInput.classList.add("reportRuleInput")
@@ -151,8 +159,10 @@ for (let [rule, methods] of Object.entries(reportConfig.rules)) {
 
             methodInputsContainer.classList.remove("hidden")
 
-            methodInput.oninput = ()=>{
-                if(method == "Infringing on an Individual or Organization's Copyright or Trademark"){
+            methodInput.oninput = () => {
+                selectedMethod = methodInput
+
+                if (method == "Infringing on an Individual or Organization's Copyright or Trademark") {
                     document.getElementById("reportConclusion").classList.add("hidden")
                     document.getElementById("reportCopyright").classList.remove("hidden")
                     return
@@ -160,14 +170,52 @@ for (let [rule, methods] of Object.entries(reportConfig.rules)) {
                 document.getElementById("reportCopyright").classList.add("hidden")
                 document.getElementById("reportConclusion").classList.remove("hidden")
 
-                
+
             }
         })
 
 
     }
-} 
+}
 
-async function app(){
-    if(me == null)window.location.href = "/"
+async function app() {
+    if (me == null) window.location.href = "/"
+}
+
+async function submitReport() {
+    try {
+        submitButton.disabled = true;
+
+        let rule = selectedRule.getAttribute("ruleName")
+        let method = selectedMethod.getAttribute("methodName")
+
+        let res = (await ajax({
+            "url": "/api/moderation/reports/create",
+            "type": "POST",
+            "data": {
+                rule: rule,
+                method: method,
+                relation: reportTarget,
+                type: reportType
+            }
+        }))
+
+        console.log(res)
+
+        if (!res) {
+            notification("Something went wrong. Please try again later", 5000);
+            return
+        }
+
+        if (res.type == 'error') {
+            notification(res.data, 5000);
+            return
+        }
+
+        notification("Report submitted. You'll be redirected momentarily", 5000, green);
+        setTimeout(() => { window.location.href = "/" }, 5000)
+
+    } catch (err) {
+        notification("Something went wrong. Please try again later", 5000);
+    }
 }
