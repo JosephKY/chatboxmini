@@ -8,6 +8,7 @@ const bodyParser = require('body-parser')
 const arrReq = require("../services/arrreq.service");
 const returnMessageService = require("../services/returnmessage.service");
 const restrictionsService = require("../services/restrictions.service")
+const userService = require("../services/users.service");
 
 // Controllers
 const userController = require("../controllers/user.controller")
@@ -80,6 +81,7 @@ router.get("/setpassword", async(req, res)=>{
 })
 
 router.patch("/changeUsername", urlencodedparser, async (req, res)=>{
+    if((await userService.manageRestriction(req, res)) === true)return
     let paramsReq = arrReq.req(req.body, ["username"]);
     if(paramsReq != true){
         returnMessageService(new ReturnMessage("2004", `Missing parameter: ${paramsReq}`, 400, "error"), res);

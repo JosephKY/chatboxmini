@@ -46,3 +46,11 @@
     object-fit: none;
     width: inherit;
 }
+
+#adminPage h5 {
+    margin-bottom: 0;
+}
+
+#adminPage br {
+    margin-top: 25px;
+}

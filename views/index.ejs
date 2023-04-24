@@ -33,7 +33,10 @@
     </div>
     <div id="app">
         <%-include ('header.ejs')%>
-            <%-include (`${page}.ejs`)%>
+        <div id="accountSuspensionNotice" class="hidden">
+            <p>Your account is suspended. <a href='/help/suspended'>Learn More</a></p>
+        </div>
+        <%-include (`${page}.ejs`)%>
     </div>
 </body>
 <script src="/scripts/main.js"></script>

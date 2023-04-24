@@ -1,16 +1,26 @@
+
+
+let pullUpUser;
+
+function manageUsersSearchSubmit(){
+    pullUpUser(document.getElementById("manageUsersSearchInput").value)
+}
+
 function app() {
     let mainContainer = document.getElementById("adminControls")
     let mainPage = document.getElementById("adminPage")
 
     let homeDirectory = new ViewDirectory()
 
+    let manageUsersPage = (new ViewPage(
+        "/admin/manageUsers",
+        mainPage
+    ))
+
     homeDirectory.addCategory(
         new ViewCategory(
             "Manage Users",
-            (new ViewPage(
-                "/admin/manageUsers",
-                mainPage
-            )),
+            manageUsersPage,
             "/assets/group.svg"
         )
     )
@@ -41,4 +51,33 @@ function app() {
         mainContainer,
         homeDirectory
     )
+
+    pullUpUser = async function pullUpUser(idOrUsername) {
+        let user = (await ajax({
+            "url": `/api/users/${idOrUsername}`,
+            "type": "GET"
+        }))
+
+        if (!user) {
+            notification("Something went wrong getting that user!")
+            return
+        }
+
+        if (user.type == 'error') {
+            notification(user.data)
+            return
+        }
+
+        user = user.data;
+        console.log(user)
+        console.log(manageUsersPage)
+
+        manageUsersPage.onload(() => {
+            document.getElementById("manageUsersUsername").value = user.username;
+            document.getElementById("manageUsersId").innerHTML = `#${user.id}`
+
+            document.getElementById("manageUsers").classList.remove("hidden")
+        })
+        manageUsersPage.load()
+    }
 }

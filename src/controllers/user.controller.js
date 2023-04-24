@@ -22,6 +22,10 @@ async function create(username, password, email, dob, req, response){
         return new ReturnMessage("120", "Age could not be verified", 400, "error");
     }
 
+    if(verAge == -2){
+        return new ReturnMessage("140", "Date of birth year must be at least 1917", 400, "error");
+    }
+
     if(verAge == false){
         return new ReturnMessage("121", "Must be 13 or older to create an account", 400, "error");
     }
@@ -102,8 +106,6 @@ async function verifyEmail(token, req){
 async function get(userid, req){
     let login = jwtService.isLoggedIn(req)
 
-    
-
     let userData = (await userService.get(userid))
     if(userData.constructor != undefined && userData.constructor.name == "ReturnMessage"){
         return userData;
@@ -117,10 +119,12 @@ async function get(userid, req){
     ret.suspended = userData.suspended
     ret.verified = userData.verified
     ret.actions = []
-    if(login != false && login.sub == userData.id){
+    if(login != false && (login.sub == userData.id || userService.admin(login.sub))){
         ret.email = userData.email
         ret.emailverified = userData.emailverified
-    } else {
+    } 
+    
+    if(login != false && login.sub != userData.id){
         ret.actions.push("report")
     }
 

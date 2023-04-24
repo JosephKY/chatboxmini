@@ -202,6 +202,7 @@ async function restrict(post, remoteAddress) {
         if ((loc != undefined && loc != null && (r.countries.includes(loc.country) || r.regions.includes(loc.region))) || r.countries.includes("*")) {
             ret.restrictions.push(Object.assign({}, r))
             if (r.hidecontent == true) {
+                ret.actions = []
                 ret.content = ""
             }
         }
@@ -213,6 +214,8 @@ async function restrict(post, remoteAddress) {
 async function get(id, req) {
     let post = (await postsService.get(id))
     if (post.constructor != undefined && post.constructor.name == "ReturnMessage") return post;
+
+    
 
     let login = jwtService.isLoggedIn(req)
     if(login != false){
