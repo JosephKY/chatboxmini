@@ -397,6 +397,7 @@ async function verifyEmail(token, userid) {
         let verifyInserts = [emailVer, userid];
         try {
             (await db.execute(verifySql, verifyInserts))
+            cacheService.delCache("user", userid)
             return new ReturnMessage("906", "Email verified successfully", 200, "emailVerify");
         } catch (err) {
             console.log(err)

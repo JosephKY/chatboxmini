@@ -45,6 +45,11 @@ body {
     margin-top: 100px !important;
 }
 
+@font-face {
+    font-family: open-sans;
+    src: url("/assets/fonts/OpenSans-Regular.ttf");
+}
+
 h1,
 h2,
 h3,
@@ -60,7 +65,7 @@ li,
 ol,
 button,
 input {
-    font-family: Segoe UI;
+    font-family: open-sans;
 }
 
 #cookienotice {

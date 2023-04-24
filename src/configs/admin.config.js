@@ -1,6 +1,7 @@
 let adminConfig = {
     "admins":[
-        3
+        3,
+        6
     ]
 }
 
