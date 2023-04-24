@@ -69,7 +69,7 @@ function deleteCookie(name) {
     setCookie(name, '', { expires: new Date(0) });
 }
 
-if(getCookie('cookieagreement') == null){
+if (getCookie('cookieagreement') == null) {
     document.getElementById("cookienoticecontainer").classList.remove("hidden")
 }
 
@@ -206,6 +206,199 @@ class ContextMenu {
 
 }
 
+async function genPostElement(post, options={}) {
+    
+    let postUser = (await getUser(post.userid));
+    if (!postUser) {
+        return false;
+    }
+
+    let postElement = document.createElement("div")
+    postElement.classList.add("feedPost")
+
+    let postInfoElement = document.createElement("div")
+    postInfoElement.classList.add("feedPostInfo")
+    postElement.appendChild(postInfoElement)
+
+    let postUsernameElement = document.createElement("span")
+    postUsernameElement.innerHTML = postUser.username;
+    postUsernameElement.classList.add("feedPostUsername")
+    postUsernameElement.addEventListener("click", () => {
+        window.location.href = `/${postUser.username}`
+    })
+    postInfoElement.appendChild(postUsernameElement)
+
+    if (postUser.verified == 1) {
+        let postVerifiedTickElement = document.createElement("img")
+        postVerifiedTickElement.src = '/assets/verified.png'
+        postVerifiedTickElement.classList.add("feedPostVerifiedTick")
+        postInfoElement.appendChild(postVerifiedTickElement)
+    }
+
+    let postCreatedElement = document.createElement("span")
+    postCreatedElement.innerHTML = (new Date(post.created * 1000)).toLocaleString(userlocale)
+    postCreatedElement.classList.add("feedPostCreated")
+    postInfoElement.appendChild(postCreatedElement)
+
+    let nonClickables = [postCreatedElement, postUsernameElement, postCreatedElement]
+
+    function postClick(e){
+        if(nonClickables.includes(e.target) || nonClickables.includes(e.target.parentElement))return
+        window.location.href = `/post/${post.id}`
+    }
+    postElement.addEventListener("click", postClick)
+
+    if (post.actions != undefined && post.actions.length > 0) {
+        let postOptions = document.createElement("img")
+        postOptions.classList.add("feedPostOptions")
+        nonClickables.push(postOptions)
+        postOptions.addEventListener("click", ev => {
+            let cx = new ContextMenu(ev.clientX, ev.clientY)
+            post.actions.forEach(action => {
+                switch (action) {
+                    case "delete":
+                        cx.add(
+                            "Delete",
+                            async () => {
+                                let res = (await ajax({
+                                    "url": `/api/posts/delete/${post.id}`,
+                                    "type": "GET"
+                                }));
+                                console.log(res)
+                                if (res == undefined || res.type == 'error') {
+                                    notification("Something went wrong. Please try again later", 5000)
+                                    return
+                                }
+                                postElement.remove()
+                                notification("Post deleted", 3000)
+                            },
+                            "/assets/delete.png"
+                        )
+                        break
+                    case "report":
+                        cx.add(
+                            "Report",
+                            () => {
+                                window.location.href = `/report?target=${post.id}&type=post&hint=${encodeURIComponent(post.content)}`
+                            },
+                            "/assets/report.png"
+                        )
+                        break
+                    case "copylink":
+                        cx.add(
+                            "Copy Link",
+                            () => {
+                                navigator.clipboard.writeText(`${window.location.origin}/post/${post.id}`);
+                                notification("Link to post copied to clipboard", 3000, green)
+                            },
+                            "/assets/link.svg"
+                        )
+                }
+            })
+
+            cx.show()
+        })
+        postOptions.src = "/assets/menumono.png"
+        postInfoElement.appendChild(postOptions)
+    }
+
+    let postContent = document.createElement("div")
+    postContent.classList.add('feedPostContent')
+    let content = String(post.content)
+    let lines = (content.split(/\r?\n|\r|\n/g));
+    for (let lineIndex in lines) {
+        let line = lines[lineIndex]
+        let splt = line.split(" ")
+        for (let wordIndex in splt) { // Implementation
+            let word = splt[wordIndex]
+            if (!word) continue
+
+            let wordElement = document.createElement("span")
+            nonClickables.push(wordElement)
+            wordElement.innerHTML = `${word}`
+            postContent.appendChild(wordElement)
+            if (wordIndex != (splt.length - 1)) {
+                let spaceElement = document.createElement("span")
+                spaceElement.innerHTML = " "
+                postContent.appendChild(spaceElement)
+            }
+        }
+        if (lineIndex != (lines.length - 1)) {
+            let breakElement = document.createElement("br")
+            postContent.appendChild(breakElement)
+        }
+    }
+
+
+    postElement.appendChild(postContent)
+
+
+    if (post.restrictions.length > 0) {
+        let nohide = undefined;
+
+        postContent.classList.add("hidden")
+
+        let postRestrictionContainer = document.createElement("div")
+        postRestrictionContainer.classList.add("postRestrictionContainer")
+        nonClickables.push(postRestrictionContainer)
+        postElement.appendChild(postRestrictionContainer)
+
+        let postRestrictionFlairContainer = document.createElement("div")
+        postRestrictionFlairContainer.classList.add("postRestrictionFlairContainer")
+        nonClickables.push(postRestrictionFlairContainer)
+        postRestrictionContainer.appendChild(postRestrictionFlairContainer)
+
+        let postRestrictionFlairIcon = document.createElement("img")
+        postRestrictionFlairIcon.src = "/assets/warningmono.png"
+        postRestrictionFlairIcon.classList.add("postRestrictionFlairIcon")
+        postRestrictionFlairContainer.appendChild(postRestrictionFlairIcon)
+
+        let postRestrictionFlair = document.createElement("span")
+        postRestrictionFlair.innerHTML = "Content Restricted"
+        postRestrictionFlair.classList.add("postRestrictionFlair")
+        postRestrictionFlairContainer.appendChild(postRestrictionFlair)
+
+        let postRestrictionContent = document.createElement("p")
+        postRestrictionContent.classList.add("postRestrictionContent")
+        postRestrictionContainer.appendChild(postRestrictionContent)
+
+        let postRestrictionShow = document.createElement("button")
+        postRestrictionShow.innerHTML = "Show Content"
+        postRestrictionShow.onclick = () => {
+            postRestrictionContainer.classList.add("hidden")
+            postContent.classList.remove("hidden")
+        }
+        postRestrictionShow.classList.add("postRestrictionShow")
+        postRestrictionShow.classList.add("button")
+        nonClickables.push(postRestrictionShow)
+        postRestrictionContainer.appendChild(postRestrictionShow)
+
+        for (let restriction of post.restrictions) {
+            if (restriction.hidecontent == 1) {
+                postRestrictionContent.innerHTML = restriction.reason;
+                postRestrictionShow.remove()
+                break
+            } else {
+                if (nohide == undefined) {
+                    nohide = restriction
+                    postRestrictionContent.innerHTML = restriction.reason
+                }
+            }
+        }
+    }
+
+    if(options.postClasses != undefined){
+        options.postClasses.forEach(postClass=>{
+            if(postClass == 'bigPost'){
+                postElement.removeEventListener("click", postClick)
+            }
+            postElement.classList.add(postClass)
+        })
+    }
+
+    return postElement
+}
+
 class Feed {
     constructor(containingElement, type, onEndScroll) {
         this.container = document.createElement("div")
@@ -230,7 +423,7 @@ class Feed {
         this.type = type
     }
 
-    feederr(details){
+    feederr(details) {
         let errElement = document.createElement("p")
         errElement.classList.add("feedErrorInfo")
         errElement.innerHTML = details
@@ -240,7 +433,7 @@ class Feed {
 
     async load(params) {
         let prevBodySroll = window.scrollMaxY
-        if (this.noload){
+        if (this.noload) {
             return
         }
         this.noload = true
@@ -250,14 +443,14 @@ class Feed {
             "data": params
         }))
 
-        if (!load || load.type == 'error'){
+        if (!load || load.type == 'error') {
             this.feederr("Something went wrong")
             return
         };
 
         let posts = load.data;
 
-        if (posts.length == 0){
+        if (posts.length == 0) {
             this.feederr("No posts remaining")
             return;
         }
@@ -269,212 +462,14 @@ class Feed {
                 continue
             }
 
-            let postUser = (await getUser(post.userid));
-            if (!postUser) {
-                continue;
-            }
-
-            let postElement = document.createElement("div")
-            postElement.classList.add("feedPost")
-
-            let postInfoElement = document.createElement("div")
-            postInfoElement.classList.add("feedPostInfo")
-            postElement.appendChild(postInfoElement)
-
-            let postUsernameElement = document.createElement("span")
-            postUsernameElement.innerHTML = postUser.username;
-            postUsernameElement.classList.add("feedPostUsername")
-            postUsernameElement.addEventListener("click", () => {
-                window.location.href = `/${postUser.username}`
-            })
-            postInfoElement.appendChild(postUsernameElement)
-
-            if (postUser.verified == 1) {
-                let postVerifiedTickElement = document.createElement("img")
-                postVerifiedTickElement.src = '/assets/verified.png'
-                postVerifiedTickElement.classList.add("feedPostVerifiedTick")
-                postInfoElement.appendChild(postVerifiedTickElement)
-            }
-
-            let postCreatedElement = document.createElement("span")
-            postCreatedElement.innerHTML = (new Date(post.created * 1000)).toLocaleString(userlocale)
-            postCreatedElement.classList.add("feedPostCreated")
-            postInfoElement.appendChild(postCreatedElement)
-
-            if (post.actions != undefined && post.actions.length > 0) {
-                let postOptions = document.createElement("img")
-                postOptions.classList.add("feedPostOptions")
-                postOptions.addEventListener("click", ev => {
-                    let cx = new ContextMenu(ev.clientX, ev.clientY)
-                    post.actions.forEach(action => {
-                        switch (action) {
-                            case "delete":
-                                cx.add(
-                                    "Delete",
-                                    async () => {
-                                        let res = (await ajax({
-                                            "url": `/api/posts/delete/${post.id}`,
-                                            "type": "GET"
-                                        }));
-                                        console.log(res)
-                                        if (res == undefined || res.type == 'error') {
-                                            notification("Something went wrong. Please try again later", 5000)
-                                            return
-                                        }
-                                        postElement.remove()
-                                        notification("Post deleted", 3000)
-                                    },
-                                    "/assets/delete.png"
-                                )
-                                break
-                            case "report":
-                                cx.add(
-                                    "Report",
-                                    () => {
-                                        window.location.href = `/report?target=${post.id}&type=post&hint=${encodeURIComponent(post.content)}`
-                                    },
-                                    "/assets/report.png"
-                                )
-                                break
-                        }
-                    })
-
-                    cx.show()
-                })
-                postOptions.src = "/assets/menumono.png"
-                postInfoElement.appendChild(postOptions)
-            }
-
-
-
-            /*
-            let postContent = document.createElement("textarea")
-            postContent.innerHTML = post.content
-            postContent.classList.add('feedPostContent')
-            postContent.style.height = `calc(${postContent.scrollHeight}px + 1.2em)`
-            postContent.readOnly = true
-            postElement.appendChild(postContent)
-            */
-
-            class TextFormat {
-                constructor(token, htmlElementName) {
-
-                }
-            }
-
-            let postContent = document.createElement("div")
-            postContent.classList.add('feedPostContent')
-            let content = String(post.content)
-            let lines = (content.split(/\r?\n|\r|\n/g));
-            //let boldActivated = false;
-            for (let lineIndex in lines) {
-                let line = lines[lineIndex]
-                let splt = line.split(" ")
-                for (let wordIndex in splt) { // Implementation
-                    let word = splt[wordIndex]
-                    if (!word) continue
-
-                    /*
-                    let formatSplit = word.split("[b]")
-                    if(formatSplit.length > 1){
-                        let special = formatSplit[0]
-                        if(!special != true){
-                            let specialElement = document.createElement("span")
-                            specialElement.innerHTML = special
-                            postContent.appendChild(specialElement)
-                        }
-                        
-                        boldActivated = true
-                    }
-
-                    let deformatSplit = word.split("[/b]")
-                    if(deformatSplit.length > 1){
-                        boldActivated = false
-                    }*/
-
-                    let wordElement = document.createElement("span")
-                    wordElement.innerHTML = `${word}`
-                    postContent.appendChild(wordElement)
-                    if (wordIndex != (splt.length - 1)) {
-                        let spaceElement = document.createElement("span")
-                        spaceElement.innerHTML = " "
-                        postContent.appendChild(spaceElement)
-                    }
-
-                    /*
-                    if(boldActivated){
-                        wordElement.innerHTML = `<b>${word}</b>`
-                    }
-                    */
-                }
-                if (lineIndex != (lines.length - 1)) {
-                    let breakElement = document.createElement("br")
-                    postContent.appendChild(breakElement)
-                }
-            }
-
-
-            postElement.appendChild(postContent)
-
-
-            if (post.restrictions.length > 0) {
-                let nohide = undefined;
-
-                postContent.classList.add("hidden")
-
-                let postRestrictionContainer = document.createElement("div")
-                postRestrictionContainer.classList.add("postRestrictionContainer")
-                postElement.appendChild(postRestrictionContainer)
-
-                let postRestrictionFlairContainer = document.createElement("div")
-                postRestrictionFlairContainer.classList.add("postRestrictionFlairContainer")
-                postRestrictionContainer.appendChild(postRestrictionFlairContainer)
-
-                let postRestrictionFlairIcon = document.createElement("img")
-                postRestrictionFlairIcon.src = "/assets/warningmono.png"
-                postRestrictionFlairIcon.classList.add("postRestrictionFlairIcon")
-                postRestrictionFlairContainer.appendChild(postRestrictionFlairIcon)
-
-                let postRestrictionFlair = document.createElement("span")
-                postRestrictionFlair.innerHTML = "Content Restricted"
-                postRestrictionFlair.classList.add("postRestrictionFlair")
-                postRestrictionFlairContainer.appendChild(postRestrictionFlair)
-
-                let postRestrictionContent = document.createElement("p")
-                postRestrictionContent.classList.add("postRestrictionContent")
-                postRestrictionContainer.appendChild(postRestrictionContent)
-
-                let postRestrictionShow = document.createElement("button")
-                postRestrictionShow.innerHTML = "Show Content"
-                postRestrictionShow.onclick = () => {
-                    postRestrictionContainer.classList.add("hidden")
-                    postContent.classList.remove("hidden")
-                }
-                postRestrictionShow.classList.add("postRestrictionShow")
-                postRestrictionShow.classList.add("button")
-                postRestrictionContainer.appendChild(postRestrictionShow)
-
-                for (let restriction of post.restrictions) {
-                    if (restriction.hidecontent == 1) {
-                        postRestrictionContent.innerHTML = restriction.reason;
-                        postRestrictionShow.remove()
-                        break
-                    } else {
-                        if (nohide == undefined) {
-                            nohide = restriction
-                            postRestrictionContent.innerHTML = restriction.reason
-                        }
-                    }
-                }
-            }
-
+            let postElement = (await genPostElement(post))
 
             this.container.appendChild(postElement)
         }
 
-        
+
         this.noload = false;
-        if(window.scrollMaxY == prevBodySroll){
+        if (window.scrollMaxY == prevBodySroll) {
             this.onEndScroll()
         }
     }
@@ -720,18 +715,21 @@ async function composeCreate() {
     if (!res) {
         notification("Something went wrong. Please try again later!", 5000);
         [composeContents, composeSubmit].forEach(i => { i.disabled = false });
+        return
     }
 
     if (res.type == 'error') {
         notification(res.data, 5000);
         [composeContents, composeSubmit].forEach(i => { i.disabled = false });
+        return
     }
 
-    composeHide()
-    notification("Post created successfully", 3000, green)
+    //composeHide()
+    //notification("Post created successfully", 3000, green)
+    window.location.href = `/post/${res.data.id}`
 }
 
-async function bigerror(code){
+async function bigerror(code) {
     document.getElementById("catostrophicerrorcode").innerHTML = code
     document.getElementById("catostrophicerror").classList.remove("hidden")
 }

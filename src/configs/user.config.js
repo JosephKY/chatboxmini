@@ -9,6 +9,11 @@ let userConfig = {
         "email",
         "deleteAccount"
     ],
+    admin:[
+        "manageUsers",
+        "managePosts",
+        "manageReports"
+    ],
     reservedUsernames:[
         "home",
         "settings",

@@ -242,6 +242,19 @@ body {
   max-width: 100%;
 }
 
+.feedPost:hover {
+  cursor: pointer;
+  background: #F0F0F0;
+}
+
+.feedPostCreated:hover {
+  cursor: text;
+}
+
+.feedPostContent *:hover {
+  cursor: text;
+}
+
 .feedPostCreated {
   margin-left: 5px;
 }

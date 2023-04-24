@@ -5,7 +5,7 @@ class Post{
         this.userid = userid
         this.content = content
         this.restrictions = []
-        this.actions = []
+        this.actions = ["copylink"]
         this.deleted = deleted
     }
 }
