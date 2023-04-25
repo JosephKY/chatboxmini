@@ -32,19 +32,25 @@ router.get("/reports/getByCommon", async (req, res)=> {
     returnMessageService((await moderationController.getReportsByCommon(req.query.start, req.query.end)), res)
 })
 
-/*
-router.patch("/changeUsername", urlencodedparser, async (req, res) => {
+router.patch("/setEmailVerifiedManual", urlencodedparser, async (req, res) => {
     if(userService.manageNonAdmin(req, res) === true)return;
-    let ret = arrReq.req(req.body, ["userid", "username"]);
-    if(ret !== true)returnMessageService(new ReturnMessage("3400", `Missing parameter: ${ret}`, 400, 'error'), res);
-    returnMessageService((await moderationController.changeUsername(req.body.username, req.body.userid, req)) , res)
+    let ret = arrReq.req(req.body, ["userid", "toggle"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("4003", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.setEmailVerifiedManual(req.body.userid, req.body.toggle)), res)
 })
 
-router.patch("/changeEmail", urlencodedparser, async (req, res) => {
+router.patch("/setVerified", urlencodedparser, async (req, res) => {
     if(userService.manageNonAdmin(req, res) === true)return;
-    let ret = arrReq.req(req.body, ["userid", "username"]);
-    if(ret !== true)returnMessageService(new ReturnMessage("3400", `Missing parameter: ${ret}`, 400, 'error'), res);
-    returnMessageService((await moderationController.changeUsername(req.body.username, req.body.userid, req)) , res)
+    let ret = arrReq.req(req.body, ["userid", "toggle"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("4103", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.setVerified(req.body.userid, req.body.toggle)), res)
 })
-*/
+
+router.patch("/setSuspended", urlencodedparser, async (req, res) => {
+    if(userService.manageNonAdmin(req, res) === true)return;
+    let ret = arrReq.req(req.body, ["userid", "toggle"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("4203", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.setSuspended(req.body.userid, req.body.toggle)), res)
+})
+
 module.exports = router

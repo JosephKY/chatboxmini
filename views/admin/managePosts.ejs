@@ -1,19 +1,44 @@
-<input type="text" id="manageUsersSearchInput" placeholder="Pull up by ID"/>
+<input type="text" id="managePostSearchInput" placeholder="Pull up by ID" />
+<button id="managePostSearchSubmit" onclick="managePostSearchSubmit()">Submit</button>
 
 <div id="managePost" class="hidden">
-<h5>#-1</h5>
+    <h5 id="managePostId">#-1</h5>
 
-<h5>Content</h5>
-<input type="textarea" id="managePostContent" placeholder="Content"/>
+    <h5>Content</h5>
+    <textarea type="" id="managePostContent" placeholder="No Content" readonly=true></textarea>
 
-<h5>Created</h5>
-<input type="datetime-local" id="managePostCreated"/></br>
+    <h5>Author</h5>
+    <button id="managePostAuthor" class="buttonlink"></button>
 
-<input type="checkbox" id="managePostDeleted"/>
-<label for="managePostDeleted">Deleted</label></br>
+    <h5>Created</h5>
+    <input type="datetime-local" id="managePostCreated" disabled /></br>
 
-<h3>Restrictions</h3>
-<div id="managePostRestrictions">
+    <input type="checkbox" id="managePostDeleted" disabled/>
+    <label for="managePostDeleted">Deleted</label></br>
 
-</div>
+    <h3>Restrictions</h3>
+    <div id="managePostRestrictions">
+        <table id="managePostRestrictionsTable">
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Created
+                </th>
+                <th>
+                    Countries
+                </th>
+                <th>
+                    Regions
+                </th>
+                <th>
+                    Reason
+                </th>
+                <th>
+                    Hide
+                </th>
+            </tr>
+        </table>
+    </div>
 </div>

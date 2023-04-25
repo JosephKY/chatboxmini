@@ -92,14 +92,26 @@ async function getReportsByCommon(start, end){
     )
 }
 
-/*
-async function changeUsername(username, userid, req){
-    return userController.changeUsername(username, userid, req)
+async function setEmailVerifiedManual(userid, toggle){
+    if(toggle != 0 && toggle != 1)return new returnMessage("4000", "Invalid email verification code", 400, 'error');
+    let update = (await userService.updateUser(["emailverified"], [toggle], userid));
+    if(update !== true)return update;
+    return new returnMessage("4001", "Email verification status set successfully", 200, 'emailverifiedUpdate')
 }
 
-async function changeEmail(newEmail, userid, req){
-    return userController.changeEmail(newEmail, undefined, userid, req)
+async function setVerified(userid, toggle){
+    if(toggle != 0 && toggle != 1)return new returnMessage("4100", "Invalid verification code", 400, 'error');
+    let update = (await userService.updateUser(["verified"], [toggle], userid));
+    if(update !== true)return update;
+    return new returnMessage("4101", "Verification status set successfully", 200, 'verifiedUpdate')
 }
-*/
 
-module.exports = { createReport, getReportsByCommon }
+async function setSuspended(userid, toggle){
+    if(toggle != 0 && toggle != 1)return new returnMessage("4200", "Invalid suspension code", 400, 'error');
+    if(toggle == 1 && userService.admin(userid) == true)return new returnMessage("4203", "Admins cannot be suspended", 400, 'error');
+    let update = (await userService.updateUser(["suspended"], [toggle], userid));
+    if(update !== true)return update;
+    return new returnMessage("4201", "Suspension status set successfully", 200, 'suspendedUpdate')
+}
+
+module.exports = { createReport, getReportsByCommon, setEmailVerifiedManual, setVerified, setSuspended }

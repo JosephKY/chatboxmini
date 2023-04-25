@@ -54,3 +54,20 @@
 #adminPage br {
     margin-top: 25px;
 }
+
+.buttonlink {
+    color: blue;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 3px 0;
+}
+
+.buttonlink:hover {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+td {
+    text-align: center;
+}

@@ -8,6 +8,7 @@ let reportModel = require("../models/report.model")
 // Services
 let dbService = require("../services/db.service")
 const cacheService = require("./cache.service")
+const userService = require("../services/users.service")
 
 // Work
 
@@ -117,5 +118,9 @@ async function getReportsByCommon(start, end){
         return new returnMessage("3301", "General Failure", 500, 'error')
     }
 }
+
+
+
+
 
 module.exports = { createReport, getReport, userCreatedReportAlready, getReportsByCommon }
