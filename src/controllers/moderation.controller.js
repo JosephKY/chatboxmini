@@ -69,4 +69,24 @@ async function createReport(type, relation, rule, method, message, req){
 
 }
 
-module.exports = { createReport }
+async function getReportsByCommon(start, end){
+    start = parseInt(start)
+    end = parseInt(end)
+
+    if(isNaN(start) || isNaN(end) || end < start || start < 0 || end < 0){
+        return new returnMessage("3302", "Invalid start or end parameter", 400, "error")
+    }
+
+    if(end - start > 50){
+        return new returnMessage("3303", "Max capacity is 50 per request", 400, 'error')
+    }
+
+    return new returnMessage(
+        "3304",
+        (await moderationService.getReportsByCommon(start, end)),
+        200,
+        'reportsGetByCommon'
+    )
+}
+
+module.exports = { createReport, getReportsByCommon }

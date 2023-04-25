@@ -122,6 +122,7 @@ async function get(userid, req){
     if(login != false && (login.sub == userData.id || userService.admin(login.sub))){
         ret.email = userData.email
         ret.emailverified = userData.emailverified
+        ret.dob = userData.dob
     } 
     
     if(login != false && login.sub != userData.id){

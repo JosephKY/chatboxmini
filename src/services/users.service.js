@@ -691,8 +691,24 @@ async function accountRestricted(id){
     return false;
 }
 
+function manageNonAdmin(req, res){
+    let login = jwtService.isLoggedIn(req)
+    if(!login){
+        returnMessageService(new ReturnMessage("-2", "Access Denied", 403, 'error'), res)
+        return
+    }
+
+    login = login.sub
+    if(!admin(login)){
+        returnMessageService(new ReturnMessage("-2", "Access Denied", 403, 'error'), res)
+        return
+    }
+
+    return false
+}
+
 function admin(id){
     return adminConfig.admins.includes(id)
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin }
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin, manageNonAdmin }

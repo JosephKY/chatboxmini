@@ -75,6 +75,12 @@ function app() {
         manageUsersPage.onload(() => {
             document.getElementById("manageUsersUsername").value = user.username;
             document.getElementById("manageUsersId").innerHTML = `#${user.id}`
+            document.getElementById("manageUsersEmail").value = user.email
+            document.getElementById("manageUsersCreated").valueAsNumber = user.created * 1000
+            document.getElementById("manageUsersDob").valueAsNumber = user.dob * 1000
+            document.getElementById("manageUsersEmailVerified").checked = trans[user.emailverified]
+            document.getElementById("manageUsersVerified").checked = trans[user.verified]
+            document.getElementById("manageUsersSuspended").checked = trans[user.suspended]
 
             document.getElementById("manageUsers").classList.remove("hidden")
         })

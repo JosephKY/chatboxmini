@@ -26,6 +26,16 @@ let availableLocales = [
     "ja-JP"
 ]
 
+let trans = {
+    1:true,
+    0:false
+}
+
+let transrev = {
+    true:1,
+    false:0
+}
+
 let userlocale = getCookie("locale")
 if (!userlocale || !availableLocales.includes(userlocale)) {
     userlocale = 'en-US';
