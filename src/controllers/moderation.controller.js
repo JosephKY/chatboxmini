@@ -10,6 +10,9 @@ let postService = require("../services/posts.service")
 let jwtService = require("../services/jwt.service")
 let moderationService = require("../services/moderation.service")
 
+// Controllers
+let userController = require("../controllers/user.controller")
+
 async function createReport(type, relation, rule, method, message, req){
     let reportTypes = reportsConfig.types;
     let rules = reportsConfig.rules
@@ -88,5 +91,15 @@ async function getReportsByCommon(start, end){
         'reportsGetByCommon'
     )
 }
+
+/*
+async function changeUsername(username, userid, req){
+    return userController.changeUsername(username, userid, req)
+}
+
+async function changeEmail(newEmail, userid, req){
+    return userController.changeEmail(newEmail, undefined, userid, req)
+}
+*/
 
 module.exports = { createReport, getReportsByCommon }

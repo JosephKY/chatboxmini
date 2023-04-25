@@ -87,17 +87,17 @@ router.patch("/changeUsername", urlencodedparser, async (req, res)=>{
         returnMessageService(new ReturnMessage("2004", `Missing parameter: ${paramsReq}`, 400, "error"), res);
         return;
     }
-    returnMessageService((await userController.changeUsername(req.body.username, req)), res)
+    returnMessageService((await userController.changeUsername(req.body.username, req.body.userid, req)), res)
 
 })
 
 router.patch("/changeEmail", urlencodedparser, async (req, res)=>{
-    let paramsReq = arrReq.req(req.body, ["email", "currentPassword"]);
+    let paramsReq = arrReq.req(req.body, ["email"]);
     if(paramsReq != true){
         returnMessageService(new ReturnMessage("2305", `Missing parameter: ${paramsReq}`, 400, "error"), res);
         return;
     }
-    returnMessageService((await userController.changeEmail(req.body.email, req.body.currentPassword, req)), res)
+    returnMessageService((await userController.changeEmail(req.body.email, req.body.currentPassword, req.body.userid, req)), res)
 
 })
 
