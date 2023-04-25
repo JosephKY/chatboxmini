@@ -2,9 +2,58 @@
 
 let pullUpUser;
 
+let currentUser;
+let currentPost;
+let currentReport;
+
 function manageUsersSearchSubmit(){
     pullUpUser(document.getElementById("manageUsersSearchInput").value)
 }
+
+async function manageUsersUsernameSubmit(){
+    let res = (await ajax({
+        "type":"PATCH",
+        "url":"/api/users/changeUsername",
+        "data":{
+            userid: currentUser,
+            username: document.getElementById("manageUsersUsername").value
+        }
+    }))
+
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    notification("Username changed successfully", 3000, green)
+}
+
+async function manageUsersEmailSubmit(){
+    let res = (await ajax({
+        "type":"PATCH",
+        "url":"/api/users/changeEmail",
+        "data":{
+            userid: currentUser,
+            email: document.getElementById("manageUsersEmail").value
+        }
+    }))
+
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    document.getElementById("manageUsersEmailVerified").checked = false
+    notification("Email changed successfully", 3000, green)
+}
+
+
 
 function app() {
     let mainContainer = document.getElementById("adminControls")
@@ -69,6 +118,7 @@ function app() {
         }
 
         user = user.data;
+        currentUser = user.id;
         console.log(user)
         console.log(manageUsersPage)
 

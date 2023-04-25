@@ -636,6 +636,12 @@ async function updateUser(columns=[], values=[], id){
     }
 }
 
+async function updateDob(dob, id){
+    dob = parseInt(dob);
+    if(isNaN(dob))dob = 0;
+    return (await updateUser(["dob"], [dob], id));
+}
+
 async function deleteUser(userid){
     let db = await dbService.newdb()
     if (!db) {
@@ -700,7 +706,7 @@ function manageNonAdmin(req, res){
 
     login = login.sub
     if(!admin(login)){
-        returnMessageService(new ReturnMessage("-2", "Access Denied", 403, 'error'), res)
+        returnMessageService(new ReturnMessage("-3", "Access Denied", 403, 'error'), res)
         return
     }
 
@@ -708,7 +714,8 @@ function manageNonAdmin(req, res){
 }
 
 function admin(id){
+    if(id == undefined)return false;
     return adminConfig.admins.includes(id)
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin, manageNonAdmin }
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin, manageNonAdmin, updateDob }
