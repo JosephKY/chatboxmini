@@ -25,4 +25,11 @@ router.post("/reports/create", urlencodedparser, async (req, res)=>{
     returnMessageService((await moderationController.createReport(req.body.type, req.body.relation, req.body.rule, req.body.method, req.body.message, req)), res);
 });
 
+router.get("/reports/getByCommon", async (req, res)=> {
+    if(userService.manageNonAdmin(req, res) === true)return;
+    let ret = arrReq.req(req.query, ["start", "end"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("3305", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.getReportsByCommon(req.query.start, req.query.end)), res)
+})
+
 module.exports = router

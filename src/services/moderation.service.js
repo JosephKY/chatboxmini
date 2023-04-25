@@ -84,4 +84,38 @@ async function getReport(id){
     }
 }
 
-module.exports = { createReport, getReport, userCreatedReportAlready }
+async function getReportsByCommon(start, end){
+    let db = (await dbService.newdb())
+
+    if(!db){
+        return new returnMessage("3300", "General Failure", 500, 'error');
+    }
+
+    let sql = `
+    SELECT * 
+    FROM reports 
+    JOIN ( SELECT relation, COUNT(*) 
+    AS count_occurrences 
+    FROM reports 
+    GROUP BY relation ) 
+    AS counts 
+    ON reports.relation = counts.relation 
+    ORDER BY counts.count_occurrences DESC 
+    LIMIT ${start},${end}
+    `;
+    try {
+        let res = (await db.execute(sql))
+        let ret = []
+        res = res[0]
+        res.forEach(data=>{
+            let report = new reportModel(data.id, data.created, data.type, data.relation, data.rule, data.method, data.message, data.userid, data.status)
+            ret.push(report)
+        })
+        return ret;
+    } catch (err) {
+        console.log(err)
+        return new returnMessage("3301", "General Failure", 500, 'error')
+    }
+}
+
+module.exports = { createReport, getReport, userCreatedReportAlready, getReportsByCommon }
