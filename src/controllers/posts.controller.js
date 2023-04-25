@@ -3,9 +3,11 @@ const postsService = require("../services/posts.service")
 const arrReqService = require("../services/arrreq.service")
 const dbService = require("../services/db.service")
 const jwtService = require("../services/jwt.service")
+const userService = require("../services/users.service")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model");
+const PostRestriction = require("../models/postrestriction.model")
 
 // Modules
 const geo = require("geoip-lite")
@@ -14,6 +16,7 @@ const htmlED = require("html-encoder-decoder")
 // Configs
 const feedParamsConfig = require("../configs/feedParams.config")
 const postConfig = require("../configs/post.config")
+
 
 // Work
 
@@ -183,7 +186,42 @@ async function feed(type, req, params = {}) {
     }
 }
 
-async function restrict(post, remoteAddress) {
+async function restrict(post, req) {
+    console.log(post)
+    let user = (await userService.get(post.userid));
+    if(user.constructor.name == 'ReturnMessage')return user;
+
+    let login = jwtService.isLoggedIn(req)
+    let isAdmin = false;
+    if(login != false && userService.admin(login.sub)){
+        isAdmin = true;
+    }
+
+    if(user.suspended == 1){
+        new PostRestriction(post, 0, 0, ['*'], [], 'The account that created this post is suspended.', true)
+    }
+
+    let db = await dbService.newdb()
+    if (!db) {
+        return new ReturnMessage("1100", "General Failure", 500, "error")
+    }
+
+    sql = "SELECT * FROM postrestrictions WHERE postid LIKE ?";
+    inserts = [post.id]
+    try {
+        let res = (await db.execute(sql, inserts))
+        res = res[0];
+        if(res != undefined){
+            res.forEach(row=>{
+                new PostRestriction(post, row.id, row.created, JSON.parse(row.countries), JSON.parse(row.regions), row.reason, row.hidecontent)
+            })
+        }
+    }catch(err){
+        console.log(err)
+        console.log("Err Post Id:", post.id)
+        return new ReturnMessage("1103", "General Failure", 500, 'error')
+    }
+
     let ret = {}
     ret.id = post.id
     ret.created = post.created
@@ -193,17 +231,25 @@ async function restrict(post, remoteAddress) {
     ret.actions = post.actions
     ret.deleted = post.deleted
 
-    if(post.deleted == 1){
+    if(post.deleted == 1 && !isAdmin){
         ret.content = ""
     }
 
-    let loc = geo.lookup(remoteAddress)
+    if(post.deleted == 1 && isAdmin){
+        ret.content = `${ret.content} <i>(Post Deleted)</i>`
+    }
+
+    let loc = geo.lookup(req.socket.remoteAddress)
     post.restrictions.forEach(r => {
         if ((loc != undefined && loc != null && (r.countries.includes(loc.country) || r.regions.includes(loc.region))) || r.countries.includes("*")) {
             ret.restrictions.push(Object.assign({}, r))
-            if (r.hidecontent == true) {
+            if (r.hidecontent == true && !isAdmin) {
                 ret.actions = []
                 ret.content = ""
+            }
+
+            if(r.hidecontent == true && isAdmin && r.reason != 'The account that created this post is suspended.'){
+                ret.content = `${ret.content} <i>(Content Restricted)</i>`
             }
         }
     })
@@ -230,7 +276,8 @@ async function get(id, req) {
         }
     }
 
-    let ret = await (restrict(post, req.socket.remoteAddress));
+    let ret = await (restrict(post, req));
+    if(ret.constructor.name == 'ReturnMessage')return ret;
 
     return new ReturnMessage("1104", ret, 200, 'postGet')
 }

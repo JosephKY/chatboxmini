@@ -1,13 +1,21 @@
 
 
 let pullUpUser;
+let pullUpPost
 
 let currentUser;
+let currentUsersPostsStartingId;
+
 let currentPost;
+
 let currentReport;
 
 function manageUsersSearchSubmit(){
     pullUpUser(document.getElementById("manageUsersSearchInput").value)
+}
+
+function managePostSearchSubmit(){
+    pullUpPost(document.getElementById("managePostSearchInput").value)
 }
 
 async function manageUsersUsernameSubmit(){
@@ -53,7 +61,122 @@ async function manageUsersEmailSubmit(){
     notification("Email changed successfully", 3000, green)
 }
 
+async function manageUsersEmailVerifiedSubmit(){
+    let res = (await ajax({
+        "type":"PATCH",
+        "url":"/api/moderation/setEmailVerifiedManual",
+        "data":{
+            userid: currentUser,
+            toggle: transrev[document.getElementById("manageUsersEmailVerified").checked]
+        }
+    }))
 
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    notification("Email verification status changed successfully", 3000, green)
+}
+
+async function manageUsersVerifiedSubmit(){
+    let res = (await ajax({
+        "type":"PATCH",
+        "url":"/api/moderation/setVerified",
+        "data":{
+            userid: currentUser,
+            toggle: transrev[document.getElementById("manageUsersVerified").checked]
+        }
+    }))
+
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    notification("Verification status changed successfully", 3000, green)
+}
+
+async function manageUsersSuspendedSubmit(){
+    let res = (await ajax({
+        "type":"PATCH",
+        "url":"/api/moderation/setSuspended",
+        "data":{
+            userid: currentUser,
+            toggle: transrev[document.getElementById("manageUsersSuspended").checked]
+        }
+    }))
+
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    notification("Suspension status changed successfully", 3000, green)
+}
+
+async function manageUsersLoadPosts(){
+    let container = document.getElementById("manageUsersPosts")
+    document.getElementById("manageUsersLoadPosts").disabled = true
+
+    let res = (await ajax({
+        "url":"/api/posts/feed/user",
+        "type":"GET",
+        "data":{
+            max:15,
+            startingId: currentUsersPostsStartingId,
+            userid: currentUser
+        }
+    }))
+
+    document.getElementById("manageUsersLoadPosts").disabled = false
+
+    if(!res){
+        return notification("Something went wrong", 5000);
+    }
+
+    if(res.type == 'error'){
+        return notification(res.data, 5000)
+    }
+
+    let posts = res.data;
+    if(posts.length == 0){
+        document.getElementById("manageUsersLoadPosts").remove()
+        return;
+    }
+
+    currentUsersPostsStartingId = posts[posts.length - 1].id
+
+    posts.forEach(post=>{
+        let postElement = document.createElement("button")
+        postElement.onclick = ()=>{
+            pullUpPost(post.id)
+        }
+        postElement.classList.add("buttonlink")
+        if(!post.content){
+            post.content = "(No Content)"
+        }
+
+        postElement.innerHTML = `#${post.id} - ${post.content}`
+
+        if(post.restrictions.length > 0){
+            postElement.innerHTML = `#${post.id} (Restricted) - ${post.content}`
+        }
+
+        container.appendChild(postElement)
+        container.appendChild(document.createElement("br"))
+        
+    })
+}
 
 function app() {
     let mainContainer = document.getElementById("adminControls")
@@ -74,13 +197,15 @@ function app() {
         )
     )
 
+    let managePostsPage = (new ViewPage(
+        "/admin/managePosts",
+        mainPage
+    ))
+
     homeDirectory.addCategory(
         new ViewCategory(
             "Manage Posts",
-            (new ViewPage(
-                "/admin/managePosts",
-                mainPage
-            )),
+            managePostsPage,
             "/assets/chat.svg"
         )
     )
@@ -108,17 +233,18 @@ function app() {
         }))
 
         if (!user) {
-            notification("Something went wrong getting that user!")
+            notification("Something went wrong getting that user!", 5000)
             return
         }
 
         if (user.type == 'error') {
-            notification(user.data)
+            notification(user.data, 5000)
             return
         }
 
         user = user.data;
         currentUser = user.id;
+        currentUsersPostsStartingId = undefined;
         console.log(user)
         console.log(manageUsersPage)
 
@@ -132,8 +258,99 @@ function app() {
             document.getElementById("manageUsersVerified").checked = trans[user.verified]
             document.getElementById("manageUsersSuspended").checked = trans[user.suspended]
 
+            Array.from(document.getElementById("manageUsersPosts").childNodes).forEach(n=>{
+                n.remove()
+            })
+
             document.getElementById("manageUsers").classList.remove("hidden")
+
+            manageUsersLoadPosts()
         })
         manageUsersPage.load()
+    }
+
+    pullUpPost = async function(id){
+        let post = (await ajax({
+            "url":`/api/posts/${id}`,
+            "type":"GET"
+        }))
+
+        if(!post){
+            return notification("Something went wrong retrieving that post!", 5000)
+        }
+
+        if(post.type == 'error'){
+            return notification(post.data, 5000)
+        }
+
+        post = post.data
+
+        let user = (await ajax({
+            "url": `/api/users/${post.userid}`,
+            "type": "GET"
+        }))
+
+        if (!user) {
+            notification("Something went wrong getting the post author!", 5000)
+            return
+        }
+
+        if (user.type == 'error') {
+            notification(`${user.data} ${user.code}`, 5000)
+            return
+        }
+
+        user = user.data
+
+        managePostsPage.onload(() => {
+            document.getElementById("managePostId").innerHTML = `#${post.id}`
+            document.getElementById("managePostContent").value = post.content
+            document.getElementById("managePostAuthor").innerHTML = user.username;
+            document.getElementById("managePostAuthor").onclick = () => {
+                pullUpUser(post.userid)
+            }
+            document.getElementById("managePostCreated").valueAsNumber = post.created * 1000
+            document.getElementById("managePostDeleted").checked = trans[post.deleted]
+            document.getElementById("managePost").classList.remove("hidden")
+
+            Array.from(document.getElementsByClassName("managePostRestrictionRow")).forEach(row=>{
+                row.remove()
+            })
+
+            post.restrictions.forEach(restriction=>{
+                let row = document.createElement("tr")
+                row.classList.add("managePostRestrictionRow")
+
+                let idCell = document.createElement("td")
+                idCell.innerHTML = restriction.id;
+                
+                let createdCell = document.createElement("td")
+                createdCell.innerHTML = new Date(restriction.created * 1000).toLocaleString()
+
+                let countriesCell = document.createElement("td")
+                restriction.countries.forEach(c=>{
+                    countriesCell.innerHTML = `${c}</br>`
+                })
+
+                let regionsCell = document.createElement("td")
+                restriction.regions.forEach(c=>{
+                    regionsCell.innerHTML = `${c}</br>`
+                })
+
+                let reasonCell = document.createElement("td")
+                reasonCell.innerHTML = restriction.reason
+
+                let hideCell = document.createElement("td")
+                hideCell.innerHTML = restriction.hidecontent;
+
+                [idCell, createdCell, countriesCell, regionsCell, reasonCell, hideCell].forEach(i=>{row.appendChild(i)})
+
+                document.getElementById("managePostRestrictionsTable").appendChild(row)
+            })
+
+            
+        })
+
+        managePostsPage.load()
     }
 }

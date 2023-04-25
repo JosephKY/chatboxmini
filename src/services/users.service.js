@@ -600,6 +600,9 @@ async function changeEmail(newEmail, id){
 }
 
 async function updateUser(columns=[], values=[], id){
+    let user = (await get(id));
+    if(user.constructor.name == 'ReturnMessage')return user;
+
     if(columns.length != values.length || columns.length == undefined || columns.length == 0)return new ReturnMessage("2202", "General Failure", 500, "error");
 
     let db = await dbService.newdb()
@@ -634,12 +637,6 @@ async function updateUser(columns=[], values=[], id){
         console.log(err, sql, inserts)
         return new ReturnMessage("2201", "General Failure", 500, "error");
     }
-}
-
-async function updateDob(dob, id){
-    dob = parseInt(dob);
-    if(isNaN(dob))dob = 0;
-    return (await updateUser(["dob"], [dob], id));
 }
 
 async function deleteUser(userid){
@@ -714,8 +711,9 @@ function manageNonAdmin(req, res){
 }
 
 function admin(id){
-    if(id == undefined)return false;
+    id = parseInt(id)
+    if(isNaN(id) || id == undefined)return false;
     return adminConfig.admins.includes(id)
 }
 
-module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin, manageNonAdmin, updateDob }
+module.exports = { getIdByUsername, getIdByEmail, create, hashPass, login, valEmail, usernameValidate, verifyPass, sendVerificationEmail, get, verifyEmail, minAge, sendResetEmail, resetPassword, changeUsername, changeEmail, updateUser, deleteUser, accountRestricted, manageRestriction, admin, manageNonAdmin }

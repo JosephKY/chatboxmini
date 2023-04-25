@@ -38,11 +38,7 @@ async function get(postid){
 
         let post = new postModel(ret.id, ret.created, ret.userid, ret.content, ret.deleted)
 
-        if(user.suspended == 1){
-            new postRestrictionModel(post, 0, 0, ["*"], [], "The user that created this post is suspended", true)
-        }
-
-        // todo: get restrictions and apply
+        cacheService.setCache("post", postid, post)
 
         sql = "SELECT * FROM postrestrictions WHERE postid LIKE ?";
         inserts = [postid]
@@ -59,7 +55,7 @@ async function get(postid){
             return new ReturnMessage("1103", "General Failure", 500, 'error')
         }
 
-        cacheService.setCache("post", postid, post)
+        
         return post;
 
     } catch (err) {
