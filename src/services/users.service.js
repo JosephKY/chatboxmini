@@ -95,7 +95,7 @@ async function get(userid) {
         }
 
         let ret = res[0];
-        let user = new userModel(ret.id, ret.created, ret.username, ret.password, ret.email, ret.emailverified, ret.suspended, ret.verified, ret.dob)
+        let user = new userModel(ret.id, ret.created, ret.username, ret.password, ret.email, ret.emailverified, ret.suspended, ret.verified, ret.dob, ret.country)
 
         cacheService.setCache("user", userid, user)
         return user;

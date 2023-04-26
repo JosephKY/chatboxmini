@@ -236,7 +236,7 @@ async function restrict(post, req) {
     }
 
     if(post.deleted == 1 && isAdmin){
-        ret.content = `${ret.content} <i>(Post Deleted)</i>`
+        ret.content = `${ret.content}`
     }
 
     let loc = geo.lookup(req.socket.remoteAddress)
@@ -249,7 +249,7 @@ async function restrict(post, req) {
             }
 
             if(r.hidecontent == true && isAdmin && r.reason != 'The account that created this post is suspended.'){
-                ret.content = `${ret.content} <i>(Content Restricted)</i>`
+                ret.content = `${ret.content}`
             }
         }
     })
