@@ -1,7 +1,9 @@
 
 
 let pullUpUser;
+let userPulled = false;
 let pullUpPost
+let postPulled = false;
 
 let currentUser;
 let currentUsersPostsStartingId;
@@ -172,6 +174,16 @@ async function manageUsersLoadPosts(){
             postElement.innerHTML = `#${post.id} (Restricted) - ${post.content}`
         }
 
+        post.restrictions.forEach(r=>{
+            if(r.hidecontent == 1){
+                postElement.innerHTML = `${postElement.innerHTML} <i>(Content Restricted)</i>`
+            }
+        })
+
+        if(post.deleted == 1){
+            postElement.innerHTML = `${postElement.innerHTML} <i>(Post Deleted)</i>`
+        }
+
         container.appendChild(postElement)
         container.appendChild(document.createElement("br"))
         
@@ -227,6 +239,8 @@ function app() {
     )
 
     pullUpUser = async function pullUpUser(idOrUsername) {
+        userPulled = false;
+
         let user = (await ajax({
             "url": `/api/users/${idOrUsername}`,
             "type": "GET"
@@ -244,16 +258,19 @@ function app() {
 
         user = user.data;
         currentUser = user.id;
-        currentUsersPostsStartingId = undefined;
+        
         console.log(user)
         console.log(manageUsersPage)
 
         manageUsersPage.onload(() => {
+            currentUsersPostsStartingId = undefined;
+
             document.getElementById("manageUsersUsername").value = user.username;
             document.getElementById("manageUsersId").innerHTML = `#${user.id}`
             document.getElementById("manageUsersEmail").value = user.email
             document.getElementById("manageUsersCreated").valueAsNumber = user.created * 1000
             document.getElementById("manageUsersDob").valueAsNumber = user.dob * 1000
+            document.getElementById("manageUsersCountry").value = user.country
             document.getElementById("manageUsersEmailVerified").checked = trans[user.emailverified]
             document.getElementById("manageUsersVerified").checked = trans[user.verified]
             document.getElementById("manageUsersSuspended").checked = trans[user.suspended]

@@ -51,7 +51,7 @@
     margin-bottom: 0;
 }
 
-#adminPage br {
+#adminPage input[type="checkbox"] {
     margin-top: 25px;
 }
 

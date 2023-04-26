@@ -7,6 +7,7 @@ const userService = require("../services/users.service");
 
 // Modules
 const htmlED = require("html-encoder-decoder")
+let geo = require("geoip-lite")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model");
@@ -123,6 +124,7 @@ async function get(userid, req) {
         ret.email = userData.email
         ret.emailverified = userData.emailverified
         ret.dob = userData.dob
+        ret.country = userData.country
     }
 
     if (login != false && login.sub != userData.id) {
@@ -143,7 +145,22 @@ async function me(req) {
         )
     }
 
-    return get(login.sub, req);
+    let myData = (await get(login.sub, req));
+    let myLocation = (geo.lookup(req.socket.remoteAddress))
+    let myCountry;
+    if(myLocation == null){
+        myCountry = 'US'
+    } else {
+        myCountry = myLocation.country;
+    }
+
+    if(myData.data.country != myCountry){
+        userService.updateUser(["country"], [myCountry], login.sub);
+    }
+
+    console.log(myData.data.country, myCountry)
+
+    return myData;
 }
 
 async function usernameTaken(username) {
