@@ -34,7 +34,5 @@ async function app(){
         return
     }
 
-    console.log(res.type)
-
     setStatus("Email verified successfully! Your account is now more secure and you can create posts")
 }

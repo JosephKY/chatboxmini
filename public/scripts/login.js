@@ -122,7 +122,6 @@ signupSubmit.onclick = async()=>{
 
     setDisableBatch([signupUsername, signupEmail, signupDob, signupPassword, signupVerifyPassword, signupAgreement, signupSubmit])
 
-    console.log(signupDob.value)
     let res = (await ajax({
         "url":"/api/users/create",
         "data":{
@@ -133,7 +132,6 @@ signupSubmit.onclick = async()=>{
         },
         "type":"POST"
     }))
-    console.log(res)
     if(res.type == "error"){
         notification(res.data, 5000);
     } else {
@@ -153,7 +151,6 @@ loginSubmit.onclick = async ()=>{
         },
         "type":"GET"
     }))
-    console.log(res)
     if(res.type == "error"){
         notification(res.data, 5000);
     } else {
@@ -180,7 +177,6 @@ signupUsername.oninput = (inp=>{
             },
             "method":"GET"
         })).data;
-        console.log(check)
         signupUsernameFlair.style.color = "red"
         if(check == -1){
             signupUsernameFlair.innerHTML = "Invalid username"

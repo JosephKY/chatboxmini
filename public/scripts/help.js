@@ -1,6 +1,6 @@
 let searchRelation = {}
 
-function safeSearch(str){
+function safeSearch(str) {
     str = String(str)
     str = str.trim()
     str = str.toLowerCase()
@@ -8,7 +8,7 @@ function safeSearch(str){
     return str;
 }
 
-for(let [articleId, articleData] of Object.entries(articles)){
+for (let [articleId, articleData] of Object.entries(articles)) {
     let articleName = String(articleData.title)
     articleName = safeSearch(articleName)
     searchRelation[articleName] = articleId
@@ -21,13 +21,12 @@ let lastSearchInput = 0
 
 searchInput.value = ""
 
-searchInput.onfocus = ()=>{
+searchInput.onfocus = () => {
     searchResultsMaster.classList.remove("hidden")
 }
 
-searchInput.oninput = ()=>{
+searchInput.oninput = () => {
     let viewportOffset = searchInput.getBoundingClientRect();
-    console.log(viewportOffset)
     searchResultsContainer.style.top = `${viewportOffset.top + viewportOffset.height + 10}px`
     searchResultsContainer.style.left = `${viewportOffset.left}px`
     searchResultsContainer.classList.remove("hidden")
@@ -35,17 +34,17 @@ searchInput.oninput = ()=>{
     let searchInputValue = searchInput.value;
     let our = Date.now()
     lastSearchInput = our
-    setTimeout(()=>{
-        if(lastSearchInput != our)return;
+    setTimeout(() => {
+        if (lastSearchInput != our) return;
         let spacesplit = searchInputValue.split(" ")
         let results = []
 
-        spacesplit.forEach(query=>{
-            if(!query)return
-            if(query == '*')query = ""
+        spacesplit.forEach(query => {
+            if (!query) return
+            if (query == '*') query = ""
             query = safeSearch(query)
-            for(let [match, articleData] of Object.entries(searchRelation)){
-                if(match.includes(query) && results.includes(articleData) == false){
+            for (let [match, articleData] of Object.entries(searchRelation)) {
+                if (match.includes(query) && results.includes(articleData) == false) {
                     results.push(articleData)
                 }
             }
@@ -53,26 +52,23 @@ searchInput.oninput = ()=>{
 
         let noresults = document.getElementById("searchResultsNoResults")
 
-        
-        Array.from(document.getElementsByClassName("articleSearchResult")).forEach(oldresult=>{
+
+        Array.from(document.getElementsByClassName("articleSearchResult")).forEach(oldresult => {
             oldresult.remove()
         })
-        
-        console.log(results)
-        if(results.length == 0){
+
+        if (results.length == 0) {
             noresults.classList.remove("hidden")
         } else {
             noresults.classList.add("hidden")
         }
 
-        results.forEach(articleId=>{
-            console.log("result:")
-            console.log(articleId)
-            articleData = articles[articleId]    
-        
+        results.forEach(articleId => {
+            articleData = articles[articleId]
+
             let resultElement = document.createElement("div")
             resultElement.classList.add("articleSearchResult")
-            
+
             let resultIconElement = document.createElement("img")
             resultIconElement.classList.add("articleSearchResultIcon")
             resultIconElement.src = articleData.icon
@@ -92,19 +88,19 @@ searchInput.oninput = ()=>{
             resultDateElement.classList.add("articleSearchResultDate")
             resultDetailsElement.appendChild(resultDateElement)
 
-            resultElement.addEventListener("click", ()=>{
+            resultElement.addEventListener("click", () => {
                 window.location.href = `/help/${articleId}`
             })
 
             searchResultsContainer.appendChild(resultElement)
         })
-        
+
 
     }, 300)
 }
 
-searchResultsMaster.addEventListener("click", e=>{
-    if(e.target != searchResultsMaster)return
+searchResultsMaster.addEventListener("click", e => {
+    if (e.target != searchResultsMaster) return
     searchResultsMaster.classList.add("hidden")
 })
 
@@ -127,7 +123,6 @@ function ajax(params) {
 }
 
 
-// Function to get the value of a cookie by its name
 function getCookie(name) {
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i++) {
@@ -139,7 +134,6 @@ function getCookie(name) {
     return null;
 }
 
-// Function to set a cookie with a name, value, and optional options
 function setCookie(name, value, options = {}) {
     let cookie = `${name}=${encodeURIComponent(value)}`;
     if (options.expires) {
@@ -158,7 +152,6 @@ function setCookie(name, value, options = {}) {
     document.cookie = cookie;
 }
 
-// Function to delete a cookie by its name
 function deleteCookie(name) {
     setCookie(name, '', { expires: new Date(0) });
 }
@@ -190,17 +183,17 @@ function articleListing(article) {
     listingElementDate.innerHTML = (new Date(article.date * 1000)).toDateString()
     listingElementDetails.appendChild(listingElementDate)
 
-    listingElement.addEventListener("click", ()=>{
+    listingElement.addEventListener("click", () => {
         window.location.href = `/help/${article.id}`
     })
 
     return listingElement
 }
 
-if(document.getElementById("featured") != undefined){
+if (document.getElementById("featured") != undefined) {
     loadFeatured()
 }
 
-if(document.getElementById("article") != undefined){
+if (document.getElementById("article") != undefined) {
     loadArticle()
 }

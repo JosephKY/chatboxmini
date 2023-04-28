@@ -1,6 +1,3 @@
-// Configs
-let reportConfig = require("../configs/reports.config")
-
 // Models
 let returnMessage = require("../models/returnMessage.model")
 let reportModel = require("../models/report.model")
