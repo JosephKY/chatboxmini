@@ -51,7 +51,6 @@ async function get(postid){
                 })
             }
         }catch(err){
-            console.log(err)
             return new ReturnMessage("1103", "General Failure", 500, 'error')
         }
 
@@ -59,7 +58,6 @@ async function get(postid){
         return post;
 
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("1102", "General Failure", 500, "error")
     }
 }
@@ -78,7 +76,6 @@ async function create(userid, content){
         let res = (await db.execute(sql, inserts));
         return res[0].insertId
     }catch(err){
-        console.log(err)
         return new ReturnMessage("1301", "General Failure", 500, "error")
     }
 }

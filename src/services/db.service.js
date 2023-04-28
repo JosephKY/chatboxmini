@@ -8,7 +8,6 @@ const cacheService = require("./cache.service")
 async function newdb() {
     let c = cacheService.getCache("dbconn", "main")
     if(c != false){
-        console.log("Using DB Cache")
         return c;
     }
     try {
@@ -28,7 +27,6 @@ async function newdb() {
         cacheService.setCache("dbconn", "main", db.conn, 9, true)
         return db.conn;
     } catch (err) {
-        console.log(err);
         cacheService.delCache("dbconn", "main")
         return false;
     }

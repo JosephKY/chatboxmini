@@ -2,6 +2,8 @@
 const express = require("express")
 const cookies = require("cookie-parser")
 const fs = require("fs")
+const uglify = require("uglify-js")
+const path = require("path")
 
 // Services
 const restrictionsService = require("./src/services/restrictions.service")
@@ -37,6 +39,33 @@ const port = 3000
 
 app.use(cookies());
 app.set("view engine", "ejs");
+
+// Uglify middleware
+app.use('/scripts', (req, res, next) => {
+    const filePath = path.join(__dirname, 'public/scripts', req.url);
+    const extname = path.extname(filePath);
+  
+    // Only handle JavaScript files
+    if (extname === '.js') {
+      fs.readFile(filePath, 'utf8', (err, code) => {
+        if (err) {
+          return next(err);
+        }
+  
+        try {
+          // Uglify and compress JavaScript code
+          const uglifiedCode = uglify.minify(code).code;
+          res.set('Content-Type', 'application/javascript');
+          res.send(uglifiedCode);
+        } catch (uglifyError) {
+          return next(uglifyError);
+        }
+      });
+    } else {
+      // Pass non-JavaScript files to the next middleware
+      next();
+    }
+  });
 
 app.use(express.static('public', {
     extensions: ['html', 'htm'],
@@ -161,5 +190,5 @@ app.get('*', async (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Chatbox Mini listening on port ${port}`)
+    console.log(`Feed listening on port ${port}`)
 })

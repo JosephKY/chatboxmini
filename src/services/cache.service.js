@@ -1,35 +1,10 @@
-/*
-
-let cache = {}
-
-
-
-function setCache(title, key, object){
-    if(cache[title] == undefined){
-        cache[title] = {}
-    }
-    cache[title][key] = Object.assign({}, object) 
-}
-
-function getCache(title, key){
-    if(cache[title] == undefined || cache[title][key] == undefined)return false;
-    let ret = cache[title][key];
-    if(ret.constructor != undefined){
-        ret = Object.assign({}, ret)
-    }
-    console.log(ret)
-    return ret
-}
-
-*/
-
 const NodeCache = require( "node-cache" );
 
 let cache = {}
 
 let excache = new NodeCache()
 
-function setCache(title, key, object, ttl=undefined, noclone=false){
+function setCache(title, key, object, ttl=300, noclone=false){
     if(cache[title] == undefined){
         cache[title] = new NodeCache({useClones:!noclone})
     }
