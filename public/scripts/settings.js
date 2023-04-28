@@ -57,6 +57,7 @@ function app() {
         )
     }
 
+    /*
     homeDirectory.addCategory(
         new ViewCategory(
             "Language",
@@ -67,6 +68,7 @@ function app() {
             "/assets/language.png"
         )
     )
+    */
 
     homeDirectory.addCategory(
         new ViewCategory(

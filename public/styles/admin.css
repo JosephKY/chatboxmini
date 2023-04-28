@@ -71,3 +71,12 @@
 td {
     text-align: center;
 }
+
+
+#composePostRestriction {
+    position: absolute;
+    background: #EEE;
+    border: 1px solid black;
+    width: 500px;
+    padding: 20px;
+  }

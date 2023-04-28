@@ -1,3 +1,19 @@
+<div id="composePostRestriction" class="hidden">
+    <select id="composePostRestrictionTemplates" onchange="updateTemplate(this.value)">
+        <option name="restrictiontemplate" disabled selected>Restriction Template</option>
+        <option name="restrictiontemplate" value="copyright">Copyright</option>
+        <option name="restrictiontemplate" value="hatefuloroffensive">Hateful or Offensive</option>
+        <option name="restrictiontemplate" value="misinformation">Mis/Disinformation</option>
+        <option name="restrictiontemplate" value="inappropriate">Inappropriate</option>
+        <option name="restrictiontemplate" value="violation">General Violation</option>
+    </select><br>
+    <input id="restrictionReason" placeholder="Reason"/><br>
+    <input id="restrictionCountries" placeholder="Countries"/><br>
+    <input id="restrictionRegions" placeholder="Regions"/><br>
+    <input id="restrictionHide" type="checkbox"/><label for="restrictionHide">Hide Content</label><br>
+    <button class="button" onclick="createPostRestriction()">Create</button>
+</div>
+
 <input type="text" id="managePostSearchInput" placeholder="Pull up by ID" />
 <button id="managePostSearchSubmit" onclick="managePostSearchSubmit()">Submit</button>
 
@@ -17,6 +33,7 @@
     <label for="managePostDeleted">Deleted</label></br>
 
     <h3>Restrictions</h3>
+    <button class="button" onclick="composePostRestriction()">Create Restriction</button>
     <div id="managePostRestrictions">
         <table id="managePostRestrictionsTable">
             <tr>
@@ -37,6 +54,9 @@
                 </th>
                 <th>
                     Hide
+                </th>
+                <th>
+                    Actions
                 </th>
             </tr>
         </table>
