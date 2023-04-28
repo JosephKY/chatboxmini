@@ -177,8 +177,8 @@ async function create(username, password, email, dob, response) {
         return new ReturnMessage("103", "General Failure", 500, "error");
     }
 
-    let sql = "INSERT INTO users (created, username, password, email, dob) VALUES (?,?,?,?,?)";
-    let inserts = [Math.floor(Date.now() / 1000), username, (await hashPass(password)), email, dob]
+    let sql = "INSERT INTO users (created, username, password, email, dob, country) VALUES (?,?,?,?,?,?)";
+    let inserts = [Math.floor(Date.now() / 1000), username, (await hashPass(password)), email, dob, 'US']
     try {
         let res = (await db.execute(sql, inserts))
         let jwt = jwtService.genJWT({ 'sub': res[0].insertId });
