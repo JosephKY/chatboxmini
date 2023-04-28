@@ -57,19 +57,6 @@ function app() {
         )
     }
 
-    /*
-    homeDirectory.addCategory(
-        new ViewCategory(
-            "Language",
-            (new ViewPage(
-                "/",
-                mainPage
-            )),
-            "/assets/language.png"
-        )
-    )
-    */
-
     homeDirectory.addCategory(
         new ViewCategory(
             "Help and Information",
@@ -142,7 +129,6 @@ function settingNewUsernameInput() {
             },
             "method": "GET"
         })).data;
-        console.log(check)
         usernameFlair.style.color = "red"
         if (check == -1) {
             usernameFlair.innerHTML = "Invalid username"
@@ -171,7 +157,6 @@ async function settingsNewUsernameSubmit() {
         }
     }));
 
-    console.log(change)
     usernameInput.disabled = false
 
     if (!change) {

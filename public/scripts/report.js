@@ -200,7 +200,6 @@ async function submitReport() {
             }
         }))
 
-        console.log(res)
 
         if (!res) {
             notification("Something went wrong. Please try again later", 5000);

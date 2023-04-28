@@ -4,7 +4,7 @@
     background: #ffea7a;
     border: 2px solid #ffb70e;
     border-radius: 5px;
-    margin-top:30px;
+    margin-top: 30px;
 }
 
 #adminControls {
@@ -79,4 +79,4 @@ td {
     border: 1px solid black;
     width: 500px;
     padding: 20px;
-  }
+}
