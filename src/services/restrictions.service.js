@@ -57,7 +57,6 @@ function isCapacity(activityName, id, prosecute=false){
         let caught = 0 
         let now = Math.floor(Date.now() / 1000)
         let wait = false;
-        console.log(max, length, now)
         figure.forEach(instance=>{
             if((now - instance) < length){
                 caught = caught + 1;
@@ -74,7 +73,6 @@ function isCapacity(activityName, id, prosecute=false){
             }
             first = wait
         }
-        console.log(caught)
     })
 
     if(prosecute != false && cap == true){

@@ -23,7 +23,6 @@ textarea {
 }
 
 body {
-  /*! background-image: url('/assets/bodynoise.png'), linear-gradient(#FFF, #000); */
   min-height: calc(100vh - 20px);
   margin: 0;
   background: #EAEAEA;
