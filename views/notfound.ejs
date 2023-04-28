@@ -58,12 +58,9 @@
         }
 
         selection = (Math.floor(Math.random() * notFoundGifs.length))
-        console.log(selection)
         while (previous.includes(selection)) {
-            console.log("inc")
             selection = (Math.floor(Math.random() * notFoundGifs.length))
         }
-        console.log(selection)
 
         previous.push(selection)
 

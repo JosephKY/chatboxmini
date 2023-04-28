@@ -64,7 +64,6 @@ async function changeUsername(userid, newUsername){
         cacheService.delCache("user", userid)
         return true
     } catch(err){
-        console.log(err)
         return new ReturnMessage("2001", "General Failure", 500, "error")
     }
 }
@@ -100,7 +99,7 @@ async function get(userid) {
         cacheService.setCache("user", userid, user)
         return user;
     } catch (err) {
-        console.log(err);
+        (err);
         return new ReturnMessage("601", "General Failure", 500, "error")
     }
 }
@@ -122,7 +121,6 @@ async function getIdByUsername(username) {
 
         return res[0].id;
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("201", "General Failure", 500, "error")
     }
 }
@@ -145,7 +143,6 @@ async function getIdByEmail(email) {
 
         return res[0].id;
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("301", "General Failure", 500, "error")
     }
 }
@@ -196,7 +193,6 @@ async function create(username, password, email, dob, response) {
             "userCreate"
         )
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("106", "General Failure", 500, "error")
     }
 }
@@ -226,7 +222,6 @@ async function login(usernameOrEmail, password, response) {
                 return new ReturnMessage("405", "Bad Password", 400, "error");
             }
         } catch (err) {
-            console.log(err)
             return new ReturnMessage("406", "General Failure", 400, "error");
         }
 
@@ -242,7 +237,6 @@ async function login(usernameOrEmail, password, response) {
             "userLogin"
         )
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("402", "General Failure", 500, "error")
     }
 }
@@ -265,7 +259,6 @@ async function cancelVerificationEmails(userid) {
         (await db.execute(sql, inserts));
         return true;
     } catch (err) {
-        console.log(err);
         return new ReturnMessage("701", "General Failure", 500, "error")
     }
 }
@@ -329,19 +322,15 @@ async function sendVerificationEmail(userid) {
         "html": emailVerHtml
     }, (err) => {
         if (err) {
-            console.log("EMAIL ERROR:")
-            console.log(err)
         }
     });
 
     let sql = "INSERT INTO emailverification (created, expires, token, email, userid) VALUES (?,?,?,?,?)";
     let inserts = [created, expires, token, email, userid];
-    console.log(inserts)
     try {
         (await db.execute(sql, inserts));
         return new ReturnMessage("802", "Verification email sent", 200, "emailVerificationSend");
     } catch (err) {
-        console.log(err)
         return new ReturnMessage("801", "General Failure", 500, "error")
     }
 }
@@ -402,7 +391,6 @@ async function verifyEmail(token, userid) {
             cacheService.delCache("user", userid)
             return new ReturnMessage("906", "Email verified successfully", 200, "emailVerify");
         } catch (err) {
-            console.log(err)
             return new ReturnMessage("905", "General Failure", 500, "error");
         }
     } catch (err) {
@@ -436,7 +424,6 @@ function minAge(dateString) {
 
 async function sendResetEmail(usernameOrEmail) {
     usernameOrEmail = String(usernameOrEmail);
-    console.log(usernameOrEmail)
 
     let db = await dbService.newdb()
     if (!db) {
@@ -450,7 +437,6 @@ async function sendResetEmail(usernameOrEmail) {
         let res = (await db.execute(sql, inserts));
         res = res[0]
         if (res == undefined || res.length == 0) {
-            console.log("no content")
             return;
         }
 
@@ -481,7 +467,6 @@ async function sendResetEmail(usernameOrEmail) {
         try {
             (await db.execute(sql, inserts))
         } catch (err) {
-            console.log(err)
             return
         }
 
@@ -492,24 +477,10 @@ async function sendResetEmail(usernameOrEmail) {
             "html": resetPassHtml
         }, (err) => {
             if (err) {
-                console.log("EMAIL ERROR:")
-                console.log(err)
             }
         });
 
-
-        console.log({
-            "from": "no-reply@youcc.xyz",
-            "to": email,
-            "subject": "Reset password",
-            "html": resetPassHtml
-        })
-        console.log("reset done")
-
-
-
     } catch (err) {
-        console.log(err)
         return
     }
 }
@@ -528,7 +499,7 @@ async function setPassword(userid, newPassword) {
         (await db.execute(sql, inserts))
         return true;
     } catch (err) {
-        console.log(err)
+        (err)
         return new ReturnMessage("1712", "General Failure", 500, "error");
     }
 }
@@ -584,13 +555,11 @@ async function resetPassword(tokenOrCurrentPassword, newPassword, req) {
         try {
             (await db.execute(sql, inserts))
         } catch (err) {
-            console.log(err)
         }
 
         return new ReturnMessage("1710", "Password reset through token successfully", 200, 'resetPassword')
 
     } catch (err) {
-        console.log(err)
         return new ReturnMessage("1705", "General Failure", 500, "error");
     }
 }
@@ -628,13 +597,11 @@ async function updateUser(columns=[], values=[], id){
     sql = sql + " WHERE id LIKE ?"
     inserts.push(id)
 
-    console.log(sql, inserts)
     try {
         (await db.execute(sql, inserts))
         cacheService.delCache("user", id)
         return true
     } catch(err){
-        console.log(err, sql, inserts)
         return new ReturnMessage("2201", "General Failure", 500, "error");
     }
 }
@@ -661,7 +628,6 @@ async function deleteUser(userid){
         cacheService.delCache("user", userid)
         return true;
     } catch(err){
-        console.log(err)
         return new ReturnMessage("2501", "General Failure", 500, "error");
     }
 }
