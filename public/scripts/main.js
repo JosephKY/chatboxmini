@@ -755,6 +755,8 @@ async function composeCreate() {
 async function bigerror(code) {
     document.getElementById("catostrophicerrorcode").innerHTML = code
     document.getElementById("catostrophicerror").classList.remove("hidden")
+    deleteCookie("jwt")
+    deleteCookie("locale")
 }
 
 async function main() {

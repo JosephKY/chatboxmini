@@ -1,5 +1,3 @@
-
-
 let pullUpUser;
 let userPulled = false;
 let pullUpPost
