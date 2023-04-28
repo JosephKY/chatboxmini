@@ -36,6 +36,12 @@ let transrev = {
     false:0
 }
 
+let lastClickedDown = null;
+
+document.addEventListener("mousedown", function(event) {
+    lastClickedDown = event.target;
+});
+
 let userlocale = getCookie("locale")
 if (!userlocale || !availableLocales.includes(userlocale)) {
     userlocale = 'en-US';
@@ -254,6 +260,7 @@ async function genPostElement(post, options={}) {
 
     function postClick(e){
         if(nonClickables.includes(e.target) || nonClickables.includes(e.target.parentElement))return
+        if(e.target != lastClickedDown)return
         window.location.href = `/post/${post.id}`
     }
     postElement.addEventListener("click", postClick)
@@ -470,6 +477,17 @@ class Feed {
         for (let post of posts) {
             if (post.deleted == 1) {
                 continue
+            }
+
+            let hiddencontent = false
+            Array.from(post.restrictions).forEach(restriction => {
+                if(restriction.hidecontent == 1){
+                    hiddencontent = true;
+                }
+            })
+
+            if(hiddencontent){
+                continue;
             }
 
             let postElement = (await genPostElement(post))

@@ -114,4 +114,13 @@ async function setSuspended(userid, toggle){
     return new returnMessage("4201", "Suspension status set successfully", 200, 'suspendedUpdate')
 }
 
-module.exports = { createReport, getReportsByCommon, setEmailVerifiedManual, setVerified, setSuspended }
+async function createRestriction(postid, countries, regions, reason, hidecontent){
+    return (await moderationService.createPostRestriction(postid, countries, regions, reason, hidecontent));
+}
+
+async function removeRestriction(id){
+    if(isNaN(parseInt(id)))return new returnMessage("5105", "Invalid restriction ID", 400, 'error')
+    return (await moderationService.removeRestriction(id))
+}
+
+module.exports = { createReport, getReportsByCommon, setEmailVerifiedManual, setVerified, setSuspended, createRestriction, removeRestriction }

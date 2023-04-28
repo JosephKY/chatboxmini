@@ -4,6 +4,7 @@ const arrReqService = require("../services/arrreq.service")
 const dbService = require("../services/db.service")
 const jwtService = require("../services/jwt.service")
 const userService = require("../services/users.service")
+const moderationService = require("../services/moderation.service")
 
 // Models
 const ReturnMessage = require("../models/returnMessage.model");
@@ -38,7 +39,6 @@ async function create(content, req) {
 
     let domains = postsService.extractDomains(content)
     let bd = postConfig.bannedDomains
-    console.log(domains)
     for (domain of domains) {
         if (bd.includes(domain)) {
             return new ReturnMessage("1304", "Content includes blacklisted domain", 400, 'error')
@@ -46,8 +46,78 @@ async function create(content, req) {
     }
 
     let creation = (await postsService.create(login.sub, htmlED.encode(content)))
+
+    if (creation.constructor.name == 'ReturnMessage') return creation;
+
+    let checking = content.toLowerCase()
+    function autorestrict() {
+        for (let hate of postConfig.autorestrict.hateful) {
+            let forms = bypassFilter(hate)
+
+            for (let form of forms) {
+                if (checking.includes(form)) {
+                    return moderationService.createPostRestriction(creation, '["*"]', "[]", "Post may content hateful or offensive content", 0);
+                }
+            }
+        }
+    }
+
+    autorestrict()
+
     return new ReturnMessage("1305", { id: creation }, 200, 'postCreate')
 }
+
+function bypassFilter(str) {
+    const variations = [];
+
+    variations.push(str);
+
+    const lettersToNumbers = {
+        'a': '4',
+        'e': '3',
+        'i': '1',
+        'o': '0',
+        's': '5',
+        't': '7'
+    };
+    let numStr = '';
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i].toLowerCase();
+        if (lettersToNumbers[char]) {
+            numStr += lettersToNumbers[char];
+        } else {
+            numStr += char;
+        }
+    }
+    variations.push(numStr);
+
+    const separators = [' ', '-', '/', '_', '.'];
+    const separatedVariations = [str];
+    for (let i = 0; i < separators.length; i++) {
+        const separator = separators[i];
+        let newVariations = [];
+        for (let j = 0; j < separatedVariations.length; j++) {
+            const separatedStr = separatedVariations[j];
+            const parts = separatedStr.split(separator);
+            for (let k = 0; k < parts.length; k++) {
+                const part = parts[k];
+                if (part) {
+                    const newStr = parts.slice(0, k).join(separator) + separator + part.split('').join(separator) + separator + parts.slice(k + 1).join(separator);
+                    newVariations.push(newStr);
+                }
+            }
+        }
+        separatedVariations.push(...newVariations);
+    }
+    variations.push(...separatedVariations);
+
+    const reversedStr = str.split('').reverse().join('');
+    variations.push(reversedStr);
+
+    return variations;
+}
+
+
 
 async function feed(type, req, params = {}) {
     let reqParams = feedParamsConfig[type]
@@ -189,15 +259,15 @@ async function feed(type, req, params = {}) {
 async function restrict(post, req) {
     console.log(post)
     let user = (await userService.get(post.userid));
-    if(user.constructor.name == 'ReturnMessage')return user;
+    if (user.constructor.name == 'ReturnMessage') return user;
 
     let login = jwtService.isLoggedIn(req)
     let isAdmin = false;
-    if(login != false && userService.admin(login.sub)){
+    if (login != false && userService.admin(login.sub)) {
         isAdmin = true;
     }
 
-    if(user.suspended == 1){
+    if (user.suspended == 1) {
         new PostRestriction(post, 0, 0, ['*'], [], 'The account that created this post is suspended.', true)
     }
 
@@ -211,12 +281,12 @@ async function restrict(post, req) {
     try {
         let res = (await db.execute(sql, inserts))
         res = res[0];
-        if(res != undefined){
-            res.forEach(row=>{
+        if (res != undefined) {
+            res.forEach(row => {
                 new PostRestriction(post, row.id, row.created, JSON.parse(row.countries), JSON.parse(row.regions), row.reason, row.hidecontent)
             })
         }
-    }catch(err){
+    } catch (err) {
         console.log(err)
         console.log("Err Post Id:", post.id)
         return new ReturnMessage("1103", "General Failure", 500, 'error')
@@ -231,11 +301,11 @@ async function restrict(post, req) {
     ret.actions = post.actions
     ret.deleted = post.deleted
 
-    if(post.deleted == 1 && !isAdmin){
+    if (post.deleted == 1 && !isAdmin) {
         ret.content = ""
     }
 
-    if(post.deleted == 1 && isAdmin){
+    if (post.deleted == 1 && isAdmin) {
         ret.content = `${ret.content}`
     }
 
@@ -248,7 +318,7 @@ async function restrict(post, req) {
                 ret.content = ""
             }
 
-            if(r.hidecontent == true && isAdmin && r.reason != 'The account that created this post is suspended.'){
+            if (r.hidecontent == true && isAdmin && r.reason != 'The account that created this post is suspended.') {
                 ret.content = `${ret.content}`
             }
         }
@@ -261,49 +331,49 @@ async function get(id, req) {
     let post = (await postsService.get(id))
     if (post.constructor != undefined && post.constructor.name == "ReturnMessage") return post;
 
-    
+
 
     let login = jwtService.isLoggedIn(req)
-    if(login != false){
+    if (login != false) {
         let myid = login.sub
-        if(myid == post.userid){
-            if(post.deleted == 0){
+        if (myid == post.userid) {
+            if (post.deleted == 0) {
                 post.actions.push("delete")
             }
-            
+
         } else {
             post.actions.push("report")
         }
     }
 
     let ret = await (restrict(post, req));
-    if(ret.constructor.name == 'ReturnMessage')return ret;
+    if (ret.constructor.name == 'ReturnMessage') return ret;
 
     return new ReturnMessage("1104", ret, 200, 'postGet')
 }
 
-async function deletePost(id, req){
+async function deletePost(id, req) {
     let post = (await get(id, req))
 
-    if(post.constructor != undefined && post.constructor.name == "ReturnMessage" && post.type == 'error'){
+    if (post.constructor != undefined && post.constructor.name == "ReturnMessage" && post.type == 'error') {
         return post;
     }
 
-    if(post.data.deleted == 1){
+    if (post.data.deleted == 1) {
         return new ReturnMessage("1900", "Post already deleted", 400, 'error')
     }
 
     let login = jwtService.isLoggedIn(req)
-    if(login == false){
+    if (login == false) {
         return new ReturnMessage("1903", "Login required", 401, 'error')
     }
 
-    if(login.sub != post.data.userid){
+    if (login.sub != post.data.userid) {
         return new ReturnMessage("1904", "Unauthorized", 403, 'error')
     }
 
     let del = (await postsService.deletePost(id))
-    if(del !== true){
+    if (del !== true) {
         return del;
     }
 

@@ -53,4 +53,20 @@ router.patch("/setSuspended", urlencodedparser, async (req, res) => {
     returnMessageService((await moderationController.setSuspended(req.body.userid, req.body.toggle)), res)
 })
 
+router.post("/createRestriction", urlencodedparser, async (req, res) => {
+    if(userService.manageNonAdmin(req, res) === true)return;
+    let ret = arrReq.req(req.body, ["postid", "countries", "regions", "reason", "hidecontent"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("5005", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.createRestriction(req.body.postid, req.body.countries, req.body.regions, req.body.reason, req.body.hidecontent)), res)
+})
+
+router.delete("/removeRestriction", urlencodedparser, async (req, res) => {
+    if(userService.manageNonAdmin(req, res) === true)return;
+    let ret = arrReq.req(req.body, ["id"]);
+    if(ret !== true)returnMessageService(new ReturnMessage("5106", `Missing parameter: ${ret}`, 400, 'error'), res);
+    returnMessageService((await moderationController.removeRestriction(req.body.id)), res)
+
+
+})
+
 module.exports = router

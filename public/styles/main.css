@@ -247,7 +247,7 @@ body {
   background: #F0F0F0;
 }
 
-.feedPostCreated:hover {
+.feedPostCreated:hover, .postRestrictionContent:hover, .postRestrictionFlair:hover {
   cursor: text;
 }
 
