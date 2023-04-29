@@ -18,11 +18,13 @@ const cacheService = require("./cache.service")
 const returnMessageService = require("./returnmessage.service")
 
 // Work
-let emailVerificationHtml = fs.readFileSync("views/emailVerification.ejs").toString('utf-8');
-emailVerificationHtml = emailVerificationHtml.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
+function replaceAll(str, find, replace) {
+    return str.split(find).join(replace);
+}
 
-let resetPasswordEmail = fs.readFileSync("views/resetPasswordEmail.ejs").toString('utf-8');
-resetPasswordEmail = resetPasswordEmail.replaceAll("%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
+let emailVerificationHtml = replaceAll((fs.readFileSync("views/emailVerification.ejs").toString('utf-8')), "%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
+
+let resetPasswordEmail =replaceAll((fs.readFileSync("views/resetPasswordEmail.ejs").toString('utf-8')), "%%SUPPORTEMAIL%%", `${emailConfig.supportEmail}`)
 
 async function usernameValidate(username) {
     username = String(username)
@@ -148,7 +150,7 @@ async function getIdByEmail(email) {
 
 async function hashPass(password) {
     let hash = crypto.createHash('sha256').update(`${password}${jwtConfig.salt}`).digest()
-    return (`${hash.toString('hex')}.${crypto.sign('sha256', hash, jwtConfig.rsa.private).toString('hex')}`)
+    return (`${hash.toString('hex')}`)
 }
 
 async function verifyPass(hash, password) {
@@ -313,7 +315,7 @@ async function sendVerificationEmail(userid) {
     let expires = created + 1800; // 30 Minutes
 
     let emailVerHtml = emailVerificationHtml
-    emailVerHtml = emailVerHtml.replaceAll("%%REPLACEME%%", `${emailConfig.verificationUrl}${token}`)
+    emailVerHtml = replaceAll(emailVerHtml, "%%REPLACEME%%", `${emailConfig.verificationUrl}${token}`)
 
     transport.sendMail({
         "from": "no-reply@youcc.xyz",
@@ -460,7 +462,7 @@ async function sendResetEmail(usernameOrEmail) {
         let userid = res[0].id
 
         let resetPassHtml = resetPasswordEmail
-        resetPassHtml = resetPassHtml.replaceAll("%%REPLACEME%%", `${emailConfig.resetPasswordUrl}${token}`)
+        resetPassHtml = replaceAll(resetPassHtml, "%%REPLACEME%%", `${emailConfig.resetPasswordUrl}${token}`)
 
         sql = "INSERT INTO reset (created, expires, token, userid) VALUES (?,?,?,?)"
         inserts = [created, expires, token, userid]
