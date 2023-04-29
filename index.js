@@ -40,8 +40,11 @@ for (let name in restrictionsConfig) {
     })
 }
 
-let blackbook = fs.readFileSync("src/configs/blackbook.txt")
-blackbook.toString().replaceAll("\r", "").split("\n").forEach(b => {
+function replaceAll(str, find, replace) {
+    return str.split(find).join(replace);
+}
+
+(replaceAll((fs.readFileSync("src/configs/blackbook.txt")).toString(), "\r", "")).split("\n").forEach(b => {
     postConfig.bannedDomains.push(b)
 })
 
