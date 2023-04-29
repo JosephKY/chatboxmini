@@ -18,3 +18,44 @@ o Community guidelines 8
 
 - Language Option 4
 - Localization 5
+- 
+- const crypto = require("crypto")
+let { privateKey, publicKey } = (crypto.generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+}))
+//fs.writeFileSync('private.txt', btoa((privateKey.export({ format: 'pem', type: 'pkcs1' }))))  
+//fs.writeFileSync('public.txt', btoa((publicKey.export({ format: 'pem', type: 'pkcs1' }))))  
+//(privateKey.export({ format: 'pem', type: 'pkcs1' }), publicKey.export({ format: 'pem', type: 'pkcs1' }))
+
+let salt = crypto.randomBytes(128).toString('hex');
+console.log(salt)
+let hash = crypto.createHash('sha256').update(`Hello World!${process.env.salt}`).digest()
+let sig = crypto.sign('sha256', hash, jwtConfig.rsa.private)
+let full = `${hash.toString('hex')}.${sig.toString('hex')}`
+
+//console.log(full)
+
+let splt = full.split(".")
+let spltHash = new Buffer(splt[0], 'hex')
+let spltSig = new Buffer(splt[1], 'hex')
+
+let ver = crypto.verify('sha256', spltHash, jwtConfig.rsa.public, spltSig)
+//console.log(ver)
+//console.log(hash, sig, ver)
+//console.log(hash.toString('hex'), sig.toString('hex'))
+
+ function hashPass(password) {
+    //return (await argon.hash(password, { secret: Buffer.from(jwtConfig.key) }));
+    let hash = crypto.createHash('sha256').update(`${password}${jwtConfig.salt}`).digest()
+    return (`${hash.toString('hex')}.${crypto.sign('sha256', hash, jwtConfig.rsa.private).toString('hex')}`)
+}
+
+ function verifyPass(hash, password) {
+    try {
+        //return (await argon.verify(hash, password, { secret: Buffer.from(jwtConfig.key) }));
+        return (hashPass(password) == hash)
+    } catch (err) {
+        return false;
+    }
+}
+
