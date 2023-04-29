@@ -7,7 +7,6 @@ const adminConfig = require("../configs/admin.config")
 
 // Modules
 const ReturnMessage = require("../models/returnMessage.model")
-const argon = require("argon2")
 const crypto = require("crypto")
 const nodemailer = require("nodemailer")
 const userModel = require("../models/user.model")
@@ -148,12 +147,13 @@ async function getIdByEmail(email) {
 }
 
 async function hashPass(password) {
-    return (await argon.hash(password, { secret: Buffer.from(jwtConfig.key) }));
+    let hash = crypto.createHash('sha256').update(`${password}${jwtConfig.salt}`).digest()
+    return (`${hash.toString('hex')}.${crypto.sign('sha256', hash, jwtConfig.rsa.private).toString('hex')}`)
 }
 
 async function verifyPass(hash, password) {
     try {
-        return (await argon.verify(hash, password, { secret: Buffer.from(jwtConfig.key) }));
+        return (hashPass(password) == hash);
     } catch (err) {
         return false;
     }

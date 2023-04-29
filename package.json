@@ -3,6 +3,7 @@
     "argon2": "^0.30.3",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
+    "dotenv": "^16.0.3",
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
@@ -17,7 +18,7 @@
     "smtp-client": "^0.4.0"
   },
   "scripts": {
-    "devStart": "nodemon server.js"
+    "devStart": "nodemon index.js"
   },
   "devDependencies": {
     "uglify-js": "^3.17.4"
