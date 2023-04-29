@@ -10,11 +10,9 @@ function getDefaultLocale(req) {
         }
 
         let def = localeConfig.defaults[loc.country]
-        console.log(loc.country)
         if (!def) return "en-US"
         return def
     } catch (err) {
-        console.log(err)
         return 'en-US'
     }
 }
@@ -38,8 +36,6 @@ function getLocale(req, res) {
     } catch (e) {
         localeData = require(`../locale/${defaultLocale}.locale.js`);
     }
-
-    console.log(localeData)
 
     return localeData
 }

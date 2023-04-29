@@ -1,6 +1,3 @@
-// Configs
-let reportConfig = require("../configs/reports.config")
-
 // Models
 let returnMessage = require("../models/returnMessage.model")
 let reportModel = require("../models/report.model")
@@ -28,7 +25,6 @@ async function userCreatedReportAlready(type, relation, userid) {
         if (res[0].length > 0) return true;
         return false;
     } catch (err) {
-        console.log(err)
         return new returnMessage("3201", "General Failure", 500, 'error');
     }
 }
@@ -44,15 +40,12 @@ async function createReport(type, relation, rule, method, message, userid) {
     let sql = "INSERT INTO reports (created, type, relation, rule, method, message, userid) VALUES (?,?,?,?,?,?,?)";
     let inserts = [created, type, relation, rule, method, message, userid]
 
-    console.log(inserts)
-
     try {
         let insert = (await db.execute(sql, inserts));
         let report = new reportModel(insert[0].insertId, created, type, relation, rule, method, message, userid, 0);
         cacheService.setCache("report", insert[0].insertId, report)
         return report;
     } catch (err) {
-        console.log(err);
         return new returnMessage("3002", "General Failure", 500, 'error');
     }
 }
@@ -81,7 +74,6 @@ async function getReport(id) {
         cacheService.setCache("report", res.id, report)
         return report;
     } catch (err) {
-        console.log(err)
         return new returnMessage("3101", "General Failure", 500, 'error');
     }
 }
@@ -115,7 +107,6 @@ async function getReportsByCommon(start, end) {
         })
         return ret;
     } catch (err) {
-        console.log(err)
         return new returnMessage("3301", "General Failure", 500, 'error')
     }
 }
@@ -146,12 +137,10 @@ async function createPostRestriction(postid, countries, regions, reason, hidecon
         let created = Math.floor(Date.now()/1000);
         let sql = 'INSERT INTO postrestrictions (created, postid, countries, regions, reason, hidecontent) VALUES (?,?,?,?,?,?)'
         let inserts = [created, postid, countries, regions, reason, hidecontent];
-        console.log(inserts)
         try {
             let res = (await db.execute(sql, inserts));
             return new returnMessage("5004", {id: res[0].insertId}, 200, 'restrictionCreate')
         } catch (err) {
-            console.log(err)
             return new returnMessage("5003", "General Failure", 500, 'error')
         }
 
@@ -176,7 +165,6 @@ async function removeRestriction(id){
             return new returnMessage("5101", "Restriction does not exist", 400, 'error')
         }
     } catch(err) {
-        console.log(err)
         return new returnMessage("5102", "General Failure", 500, 'error')
     }
 
@@ -185,7 +173,6 @@ async function removeRestriction(id){
         (await db.execute(sql, inserts));
         return new returnMessage("5103", "Restriction deleted", 200, 'restrictionDElete');
     } catch (err) {
-        console.log(err)
         return new returnMessage("5104", "General Failure", 500, 'error')
     }
 }

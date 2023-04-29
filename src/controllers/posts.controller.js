@@ -163,7 +163,6 @@ async function feed(type, req, params = {}) {
 
                 return new ReturnMessage("1206", final, 200, 'feedGet')
             } catch (err) {
-                console.log(err)
                 return new ReturnMessage("1205", "General Failure", 500, "error")
             }
         } else {
@@ -249,7 +248,6 @@ async function feed(type, req, params = {}) {
 
                 return new ReturnMessage("1217", final, 200, 'feedGet')
             } catch (err) {
-                console.log(err)
                 return new ReturnMessage("1216", "General Failure", 500, "error")
             }
         }
@@ -257,7 +255,6 @@ async function feed(type, req, params = {}) {
 }
 
 async function restrict(post, req) {
-    console.log(post)
     let user = (await userService.get(post.userid));
     if (user.constructor.name == 'ReturnMessage') return user;
 
@@ -287,8 +284,6 @@ async function restrict(post, req) {
             })
         }
     } catch (err) {
-        console.log(err)
-        console.log("Err Post Id:", post.id)
         return new ReturnMessage("1103", "General Failure", 500, 'error')
     }
 

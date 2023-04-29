@@ -1,5 +1,3 @@
-
-
 let pullUpUser;
 let userPulled = false;
 let pullUpPost
@@ -64,12 +62,11 @@ function updateTemplate(val) {
     restrictionHide.checked = template.hidecontent
 }
 
-async function createPostRestriction(){
-    console.log(currentPost)
+async function createPostRestriction() {
     let ret = (await ajax({
-        "url":"/api/moderation/createRestriction",
-        "type":"POST",
-        "data":{
+        "url": "/api/moderation/createRestriction",
+        "type": "POST",
+        "data": {
             'reason': restrictionReason.value,
             'countries': restrictionCountries.value,
             'regions': restrictionRegions.value,
@@ -78,11 +75,11 @@ async function createPostRestriction(){
         }
     }));
 
-    if(!ret){
+    if (!ret) {
         return notification("Something went wrong creating that restriction", 5000);
     }
 
-    if(ret.type == 'error'){
+    if (ret.type == 'error') {
         return notification(ret.data, 5000)
     }
 
@@ -90,7 +87,7 @@ async function createPostRestriction(){
     pullUpPost(currentPost)
 }
 
-function composePostRestriction(){
+function composePostRestriction() {
     document.getElementById("composePostRestriction").classList.remove("hidden")
 }
 
@@ -341,9 +338,6 @@ function app() {
         user = user.data;
         currentUser = user.id;
 
-        console.log(user)
-        console.log(manageUsersPage)
-
         manageUsersPage.onload(() => {
             currentUsersPostsStartingId = undefined;
 
@@ -411,7 +405,6 @@ function app() {
 
             let restrictionselect = document.getElementById("composePostRestrictionTemplates")
             Array.from(restrictionselect.options).forEach(option => {
-                console.log(option.value, restrictionTemplates[option.value])
                 let val = option.value
                 if (!val) return;
 
@@ -467,24 +460,24 @@ function app() {
 
                 let hideCell = document.createElement("td")
                 hideCell.innerHTML = restriction.hidecontent;
-                
+
                 let actionsCell = document.createElement("td")
                 let removeAction = document.createElement("button")
                 removeAction.innerHTML = "Remove"
-                removeAction.onclick = async () =>{
+                removeAction.onclick = async () => {
                     let res = (await ajax({
-                        url:"/api/moderation/removeRestriction",
-                        type:"DELETE",
+                        url: "/api/moderation/removeRestriction",
+                        type: "DELETE",
                         data: {
                             id: restriction.id
                         }
                     }))
 
-                    if(!res){
+                    if (!res) {
                         return notification("Something went wrong removing that restriction", 5000)
                     }
 
-                    if(res.type == 'error'){
+                    if (res.type == 'error') {
                         return notification(res.data, 5000);
                     }
 

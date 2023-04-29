@@ -281,7 +281,6 @@ async function genPostElement(post, options={}) {
                                     "url": `/api/posts/delete/${post.id}`,
                                     "type": "GET"
                                 }));
-                                console.log(res)
                                 if (res == undefined || res.type == 'error') {
                                     notification("Something went wrong. Please try again later", 5000)
                                     return
@@ -429,7 +428,6 @@ class Feed {
         document.body.onscroll = () => {
             if (window.scrollY >= (window.scrollMaxY - 50)) {
                 try {
-                    console.log("fire")
                     this.onEndScroll()
                 } catch (err) {
 
@@ -518,12 +516,10 @@ class ViewPage {
         this.container.appendChild(loadingAjax)
 
         if (this.sourceContent == false) {
-            console.log('loading')
             let content = await ajax({
                 "url": this.source,
                 "type": "GET"
             })
-            console.log(content)
             this.sourceContent = content;
         }
 
@@ -586,7 +582,6 @@ class Views {
             this.master.removeChild(this.master.firstChild)
         }
 
-        console.log(this.directories)
         if (this.directories.length > 1) {
             let backElement = document.createElement("div")
             backElement.classList.add("settingsElement")
@@ -760,6 +755,8 @@ async function composeCreate() {
 async function bigerror(code) {
     document.getElementById("catostrophicerrorcode").innerHTML = code
     document.getElementById("catostrophicerror").classList.remove("hidden")
+    deleteCookie("jwt")
+    deleteCookie("locale")
 }
 
 async function main() {
@@ -787,7 +784,6 @@ async function main() {
         try {
             app()
         } catch (err) {
-            console.log("No App")
         }
     } catch (err) {
         bigerror(err)

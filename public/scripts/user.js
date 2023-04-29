@@ -68,5 +68,4 @@ async function app(){
         })
     }
 
-    console.log(user)
 }

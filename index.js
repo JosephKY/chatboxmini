@@ -2,6 +2,9 @@
 const express = require("express")
 const cookies = require("cookie-parser")
 const fs = require("fs")
+const uglify = require("uglify-js")
+const path = require("path")
+require("dotenv").config()
 
 // Services
 const restrictionsService = require("./src/services/restrictions.service")
@@ -19,6 +22,17 @@ const articlesConfig = require("./src/configs/articles.config")
 const adminConfig = require("./src/configs/admin.config")
 
 // Work
+
+function requireSecure(req, res, next) {
+    if (req.secure) {
+        // Request was made over HTTPS; continue on to next middleware
+        next();
+    } else {
+        // Request was not made over HTTPS; redirect to HTTPS version
+        res.redirect(`https://${req.headers.host}${req.url}`);
+    }
+}
+
 for (let name in restrictionsConfig) {
     restrictionsService.addActivity(name)
     restrictionsConfig[name].forEach(r => {
@@ -26,8 +40,11 @@ for (let name in restrictionsConfig) {
     })
 }
 
-let blackbook = fs.readFileSync("src/configs/blackbook.txt")
-blackbook.toString().replaceAll("\r", "").split("\n").forEach(b => {
+function replaceAll(str, find, replace) {
+    return str.split(find).join(replace);
+}
+
+(replaceAll((fs.readFileSync("src/configs/blackbook.txt")).toString(), "\r", "")).split("\n").forEach(b => {
     postConfig.bannedDomains.push(b)
 })
 
@@ -35,8 +52,36 @@ const app = express()
 const port = 3000
 
 
+app.use(requireSecure)
 app.use(cookies());
 app.set("view engine", "ejs");
+
+// Uglify middleware
+app.use('/scripts', (req, res, next) => {
+    const filePath = path.join(__dirname, 'public/scripts', req.url);
+    const extname = path.extname(filePath);
+
+    // Only handle JavaScript files
+    if (extname === '.js') {
+        fs.readFile(filePath, 'utf8', (err, code) => {
+            if (err) {
+                return next(err);
+            }
+
+            try {
+                // Uglify and compress JavaScript code
+                const uglifiedCode = uglify.minify(code).code;
+                res.set('Content-Type', 'application/javascript');
+                res.send(uglifiedCode);
+            } catch (uglifyError) {
+                return next(uglifyError);
+            }
+        });
+    } else {
+        // Pass non-JavaScript files to the next middleware
+        next();
+    }
+});
 
 app.use(express.static('public', {
     extensions: ['html', 'htm'],
@@ -44,7 +89,7 @@ app.use(express.static('public', {
 
 app.use("/api", apiRoute)
 
-function renderPage(req, res, page, index="index", extras={}, adminonly=false) {
+function renderPage(req, res, page, index = "index", extras = {}, adminonly = false) {
     try {
         const localeData = localeService.getLocale(req, res);
         let replicated = {
@@ -54,12 +99,12 @@ function renderPage(req, res, page, index="index", extras={}, adminonly=false) {
         replicated = Object.assign({}, replicated, extras)
 
         let render = index
-        if(index == false){
+        if (index == false) {
             render = page
-        } 
+        }
 
         let login = isLoggedIn(req)
-        if(adminonly && (!login || !(adminConfig.admins.includes(login.sub)))){
+        if (adminonly && (!login || !(adminConfig.admins.includes(login.sub)))) {
             page = "user";
             replicated.page = "user";
             render = "index";
@@ -90,7 +135,7 @@ app.get("/login", async (req, res) => {
     renderPage(req, res, "login")
 })
 
-app.get("/resetpassword", async (req, res)=>{
+app.get("/resetpassword", async (req, res) => {
     renderPage(req, res, "resetpassword")
 })
 
@@ -122,14 +167,14 @@ app.get("/help", async (req, res) => {
     renderPage(req, res, "help", "helpindex", { articles: articlesConfig })
 })
 
-userConfig.settings.forEach(setting=>{
-    app.get(`/setting/${setting}`, async(req, res)=>{
+userConfig.settings.forEach(setting => {
+    app.get(`/setting/${setting}`, async (req, res) => {
         renderPage(req, res, `settings/${setting}`, false)
     })
 })
 
-for(let [articleId, _] of Object.entries(articlesConfig)){
-    app.get(`/help/raw/${articleId}`, async(req, res)=>{
+for (let [articleId, _] of Object.entries(articlesConfig)) {
+    app.get(`/help/raw/${articleId}`, async (req, res) => {
         renderPage(req, res, `articles/${articleId}`, false)
     })
 
@@ -138,11 +183,11 @@ for(let [articleId, _] of Object.entries(articlesConfig)){
     })
 }
 
-app.get("/admin", async (req, res)=>{
+app.get("/admin", async (req, res) => {
     renderPage(req, res, "admin", "index", {}, true)
 })
 
-userConfig.admin.forEach(adminPage=>{
+userConfig.admin.forEach(adminPage => {
     app.get(`/admin/${adminPage}`, async (req, res) => {
         renderPage(req, res, `admin/${adminPage}`, false, {}, true)
     })
@@ -161,5 +206,5 @@ app.get('*', async (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Chatbox Mini listening on port ${port}`)
+    console.log(`Feed listening on port ${port}`)
 })

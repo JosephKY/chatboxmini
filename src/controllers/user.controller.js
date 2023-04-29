@@ -158,8 +158,6 @@ async function me(req) {
         userService.updateUser(["country"], [myCountry], login.sub);
     }
 
-    console.log(myData.data.country, myCountry)
-
     return myData;
 }
 
@@ -200,7 +198,7 @@ async function sendResetEmail(usernameOrEmail, req) {
     let login = (jwtService.isLoggedIn(req));
     if (login != false) return new ReturnMessage("1702", "Cannot reset a password while logged in", 400, 'error')
 
-    console.log(await userService.sendResetEmail(usernameOrEmail));
+    await userService.sendResetEmail(usernameOrEmail);
     return new ReturnMessage("1701", "If an account by the provided username/email exists, and the account's email is verified, a password reset email should be sent", 200, 'resetPassword');
 }
 
