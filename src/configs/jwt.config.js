@@ -9,8 +9,8 @@ let jwt = {
     "passAlgorithm":"sha256",
     "salt": env.SALT || "5fb57212ff8f9c387348b65b17e",
     "rsa":{
-        "public": atob(env.PUBLIC_KEY),
-        "private": atob(env.PRIVATE_KEY)
+        "public": Buffer.from(env.PUBLIC_KEY, 'hex').toString(),
+        "private": Buffer.from(env.PRIVATE_KEY).toString()
     }
 }
 
