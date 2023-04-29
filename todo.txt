@@ -59,3 +59,4 @@ let ver = crypto.verify('sha256', spltHash, jwtConfig.rsa.public, spltSig)
     }
 }
 
+5.12.0
